@@ -309,71 +309,58 @@
   .pkg-flash.fire{ animation: flashPulseFull 0.35s ease-out forwards; }
   @keyframes flashPulseFull{ 0%{opacity:0;} 15%{opacity:0.9;} 100%{opacity:0;} }
 
-  /* ── STEP dentro l'overlay: stack di carte in stile TCG Pocket (flip 3D una alla volta) ── */
-  .ov-step{ display:none; width:100%; max-width:340px; flex-direction:column; align-items:center; gap:0.55rem; cursor:pointer; }
+  /* ── STEP dentro l'overlay: stack di carte trascinabili, una alla volta, verso l'alto ── */
+  .ov-step{ display:none; width:100%; max-width:340px; flex-direction:column; align-items:center; gap:0.55rem; }
   .ov-step.show{ display:flex; }
   .reveal-progress{ display:flex; gap:0.4rem; }
   .slot-dot{ width:9px; height:9px; border:2px solid var(--gb-4); background:rgba(255,255,255,0.15); }
   .slot-dot.done{ background:var(--gold); border-color:var(--gb-0); }
 
-  .card-stack{ position:relative; height:min(43vh, 240px); aspect-ratio:210/290; }
-  .stack-card{
+  .card-stack{ position:relative; height:min(43vh, 240px); aspect-ratio:210/290; touch-action:none; }
+  .deck-card{
     position:absolute; inset:0; border-radius:0; background:var(--menu-window-bg);
     border:3px solid var(--gb-0); box-shadow:inset 0 0 0 2px var(--gb-4);
     clip-path: polygon(12px 0, calc(100% - 12px) 0, 100% 12px, 100% calc(100% - 12px), calc(100% - 12px) 100%, 12px 100%, 0 calc(100% - 12px), 0 12px);
-  }
-  .stack-card.behind2{ transform:translateY(10px) scale(0.96); opacity:0.5; }
-  .stack-card.behind1{ transform:translateY(5px) scale(0.98); opacity:0.75; }
-
-  .flip-card{ position:absolute; inset:0; perspective:900px; cursor:pointer; }
-  .flip-inner{
-    position:relative; width:100%; height:100%; transition:transform 0.55s cubic-bezier(.3,.7,.3,1.2);
-    transform-style:preserve-3d;
-  }
-  .flip-card.flipped .flip-inner{ transform:rotateY(180deg); }
-  .flip-face{
-    position:absolute; inset:0; backface-visibility:hidden; -webkit-backface-visibility:hidden;
-    border-radius:0; border:3px solid var(--gb-0); box-shadow:inset 0 0 0 2px var(--gb-4);
-    clip-path: polygon(12px 0, calc(100% - 12px) 0, 100% 12px, 100% calc(100% - 12px), calc(100% - 12px) 100%, 12px 100%, 0 calc(100% - 12px), 0 12px);
     display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0.5rem; padding:1rem; text-align:center;
+    overflow:hidden;
   }
-  .flip-face.back{
-    background:
-      repeating-linear-gradient(45deg, rgba(255,255,255,0.06) 0 6px, transparent 6px 14px),
-      var(--menu-window-bg);
-  }
-  .flip-face.back .back-mark{ font-family:'Press Start 2P', monospace; font-size:0.62rem; color:rgba(255,203,5,0.85); text-shadow:var(--pixel-outline); }
-  .flip-face.front{ background:var(--menu-window-bg); transform:rotateY(180deg); }
-  .flip-face.front.rare-hit{ box-shadow:inset 0 0 0 2px var(--gb-4), 0 0 26px 5px rgba(255,203,5,0.7); }
-  .flip-face .glyph{ font-size:2.6rem; }
-  .flip-face .rarity-tag{ font-family:'Silkscreen', monospace; font-size:0.62rem; font-weight:700; text-transform:uppercase; padding:0.22rem 0.5rem; border-radius:3px; border:2px solid rgba(10,16,48,0.55); background:rgba(63,114,196,0.2); }
-  .flip-face .card-name{ font-size:0.8rem; line-height:1.35; }
-  .flip-face .dup-tag{ font-size:0.66rem; color:var(--gold); }
+  .deck-card.back{ transform:translateY(10px) scale(0.95); opacity:0.45; z-index:1; pointer-events:none; }
+  .deck-card.mid{ transform:translateY(5px) scale(0.975); opacity:0.85; z-index:2; pointer-events:none; }
+  .deck-card.front{ z-index:3; cursor:grab; }
+  .deck-card.front.dragging{ cursor:grabbing; }
+  .deck-card.front.jolt{ animation:cardJoltFx 0.22s ease; }
+  @keyframes cardJoltFx{ 0%,100%{ transform:translate(0,0) rotate(0deg);} 30%{ transform:translate(0,-3px) rotate(-1.2deg);} 60%{ transform:translate(0,1px) rotate(1deg);} }
+  .deck-card.front.rare-hit{ box-shadow:inset 0 0 0 2px var(--gb-4), 0 0 26px 5px rgba(255,203,5,0.7); }
 
-  /* ── riflesso holo che segue il dito/mouse sulla carta, come le vere carte lucide ── */
-  .flip-face.front .holo{
+  .deck-card .glyph{ font-size:2.6rem; }
+  .deck-card .rarity-tag{ font-family:'Silkscreen', monospace; font-size:0.62rem; font-weight:700; text-transform:uppercase; padding:0.22rem 0.5rem; border-radius:3px; border:2px solid rgba(10,16,48,0.55); background:rgba(63,114,196,0.2); }
+  .deck-card .card-name{ font-size:0.8rem; line-height:1.35; }
+  .deck-card .dup-tag{ font-size:0.66rem; color:var(--gold); min-height:1em; }
+
+  /* ── riflesso holo che segue il dito/mouse sulla carta in primo piano, come le vere carte lucide ── */
+  .deck-card .holo{
     position:absolute; inset:0; opacity:0.28; mix-blend-mode:color-dodge; pointer-events:none;
     background:linear-gradient(115deg, transparent 20%, var(--holo-a,transparent) 40%, var(--holo-b,transparent) 55%, transparent 75%);
     background-size:220% 220%; transition:background-position 0.08s;
   }
-  .flip-face.front.legendary .holo{ opacity:0.8; animation:holoAutoSweep 2.4s ease-in-out infinite; }
+  .deck-card.front.legendary .holo{ opacity:0.8; animation:holoAutoSweep 2.4s ease-in-out infinite; }
   @keyframes holoAutoSweep{ 0%,100%{ background-position:0% 20%; } 50%{ background-position:100% 80%; } }
 
-  /* ── alone rotante dietro la carta leggendaria ── */
+  /* ── alone rotante dietro la carta leggendaria, al momento del gran finale ── */
   .card-stack.legendary-halo::before{
-    content:''; position:absolute; inset:-55%; z-index:-1; border-radius:50%;
+    content:''; position:absolute; inset:-55%; z-index:0; border-radius:50%;
     background:conic-gradient(from 0deg, var(--c-legend-1), var(--c-legend-2), var(--c-legend-3), var(--c-legend-4), var(--c-legend-5), var(--c-legend-1));
     animation:ringSpin 4s linear infinite; filter:blur(20px); opacity:0.55;
   }
   @keyframes ringSpin{ to{ transform:rotate(360deg); } }
 
-  /* ── velo con raggi dorati durante l'attesa prima di rivelare una leggendaria ── */
+  /* ── velo con la scritta "LEGGENDARIA!" — unico messaggio testuale del gran finale ── */
   .legend-veil{
     position:absolute; inset:-40px; background:radial-gradient(circle, rgba(63,114,196,0.25), rgba(10,16,48,0.92) 70%);
-    display:none; align-items:center; justify-content:center; overflow:hidden; opacity:0; z-index:6;
+    display:none; align-items:center; justify-content:center; overflow:hidden; opacity:0; z-index:8; pointer-events:none;
   }
-  .legend-veil.show{ display:flex; animation:veilPulse 1.1s ease-in-out; }
-  @keyframes veilPulse{ 0%{opacity:0;} 30%{opacity:1;} 100%{opacity:1;} }
+  .legend-veil.show{ display:flex; animation:veilPulse 1.3s ease-in-out forwards; }
+  @keyframes veilPulse{ 0%{opacity:0;} 20%{opacity:1;} 75%{opacity:1;} 100%{opacity:0;} }
   .legend-veil::before{
     content:''; position:absolute; inset:-50%;
     background:conic-gradient(from 0deg, transparent 0deg, rgba(255,203,5,0.18) 8deg, transparent 20deg, transparent 160deg, rgba(63,114,196,0.24) 172deg, transparent 184deg, transparent 340deg, rgba(255,203,5,0.18) 352deg, transparent 360deg);
@@ -390,6 +377,36 @@
 
   .card-stack.shaking{ animation:stageShake 0.35s ease-in-out 3; }
   @keyframes stageShake{ 0%,100%{ transform:translateX(0);} 25%{ transform:translateX(-4px);} 75%{ transform:translateX(4px);} }
+
+  /* ── mini-scoppi sfalsati sulla carta leggendaria, effetto "fuochi d'artificio" ── */
+  .mini-burst{ position:absolute; width:6px; height:6px; border-radius:50%; background:var(--mini-color,#fff); opacity:0; transform:translate(-50%,-50%) scale(0.6); z-index:9; }
+  .mini-burst.fire{ animation:miniBurstFx 0.6s ease-out forwards; }
+  @keyframes miniBurstFx{
+    0%{ opacity:1; box-shadow:0 0 0 0 var(--mini-color,#fff); transform:translate(-50%,-50%) scale(0.6); }
+    100%{ opacity:0; box-shadow:0 0 0 22px transparent; transform:translate(-50%,-50%) scale(2.2); }
+  }
+
+  /* ── scintille che seguono il dito/mouse durante lo strappo, indizio leggendaria ── */
+  .tear-sparkle{
+    position:absolute; width:5px; height:5px; border-radius:50%; background:#ffe14d; pointer-events:none; z-index:9;
+    box-shadow:0 0 6px 2px rgba(255,225,90,0.85); opacity:0;
+  }
+  .tear-sparkle.fire{ animation:tearSparkleFx 0.55s ease-out forwards; }
+  @keyframes tearSparkleFx{
+    0%{ opacity:0.9; transform:translate(-50%,-50%) scale(1); }
+    100%{ opacity:0; transform:translate(-50%,-50%) translateY(-14px) scale(0.3); }
+  }
+  /* bagliore discreto sulla lama/lucentezza mentre si strappa una bustina con leggendaria dentro */
+  .pack-btn-full.legend-hint .cut-track-full .blade{ filter:drop-shadow(0 2px 3px rgba(0,0,0,0.55)) drop-shadow(0 0 6px rgba(255,203,5,0.9)); }
+  .pack-btn-full.legend-hint .cut-track-full .cut-glow{ box-shadow:0 0 14px 3px rgba(255,203,5,1); }
+  /* sfarfallio ambiguo e occasionale prima ancora di toccare la bustina (ogni 6-7s) */
+  .pack-btn-full.legend-hint .pack-full::after{
+    content:''; position:absolute; inset:0; background:radial-gradient(circle at 50% 40%, rgba(255,225,90,0.35), transparent 65%);
+    opacity:0; pointer-events:none;
+  }
+  .pack-btn-full.legend-hint.flicker .pack-full::after{ animation:hintFlickerFx 0.5s ease-out; }
+  @keyframes hintFlickerFx{ 0%{opacity:0;} 30%{opacity:0.8;} 100%{opacity:0;} }
+  .pack-full.jolt{ animation:cardJoltFx 0.22s ease; }
 
   /* ── contenitori per particelle e coriandoli (nessun asset esterno, solo CSS) ── */
   .fx-particles, .fx-confetti{ position:absolute; inset:0; pointer-events:none; overflow:visible; z-index:7; }
@@ -492,7 +509,7 @@
 
   <div class="pack-overlay" id="packOverlay">
     <div class="ov-step show" id="stepTear">
-      <div class="pack-stage-full">
+      <div class="pack-stage-full" id="packStageFull">
         <div class="pkg-flash" id="pkgFlash"></div>
         <div class="pkg-burst" id="pkgBurst"></div>
         <div class="fx-particles" id="tearParticles"></div>
@@ -506,7 +523,7 @@
             <div class="foil-sheen"></div>
             <div class="mark">CARDSYNC · EDIZIONE GIORNALIERA</div>
             <div class="glyph">🎴</div>
-            <div class="tap-hint">Scorri per tagliare, o tocca per aprire</div>
+            <div class="tap-hint">Scorri lateralmente per strappare</div>
           </div>
           <div class="pack-flap-full" id="packFlapFull"><div class="inner"></div></div>
           <div class="pack-shell-full" id="packShellFull"><div class="inner"></div></div>
@@ -522,19 +539,14 @@
         <div class="slot-dot" data-slot="3"></div>
       </div>
       <div class="card-stack" id="cardStack">
-        <div class="stack-card behind2"></div>
-        <div class="stack-card behind1"></div>
-        <div class="flip-card" id="flipCard">
-          <div class="flip-inner" id="flipInner">
-            <div class="flip-face back"><span class="back-mark">CARDSYNC</span></div>
-            <div class="flip-face front" id="flipFront"></div>
-          </div>
-        </div>
-        <div class="legend-veil" id="legendVeil"><span>RARISSIMO IN ARRIVO…</span></div>
+        <div class="deck-card back" id="deckBack"><div class="holo"></div><div class="card-body"></div></div>
+        <div class="deck-card mid" id="deckMid"><div class="holo"></div><div class="card-body"></div></div>
+        <div class="deck-card front" id="deckFront"><div class="holo"></div><div class="card-body"></div></div>
+        <div class="legend-veil" id="legendVeil"><span>LEGGENDARIA!</span></div>
         <div class="fx-particles" id="revealParticles"></div>
         <div class="fx-confetti" id="revealConfetti"></div>
       </div>
-      <div class="reveal-hint" id="revealHint">Tocca la carta per scoprirla</div>
+      <div class="reveal-hint" id="revealHint">Trascina la carta verso l'alto ▲</div>
     </div>
 
     <div class="ov-step" id="stepRecap">
@@ -690,13 +702,13 @@
     dayN:$('dayN'), chapterLabel:$('chapterLabel'), stage:$('stage'),
     playerSprite:$('playerSprite'), npcSprite:$('npcSprite'), flyer:$('flyer'), companionSprite:$('companionSprite'),
     dlg:$('dlg'), dlgName:$('dlgName'), dlgText:$('dlgText'),
-    packOverlay:$('packOverlay'), packBtnFull:$('packBtnFull'), packElFull:$('packElFull'),
+    packOverlay:$('packOverlay'), packBtnFull:$('packBtnFull'), packElFull:$('packElFull'), packStageFull:$('packStageFull'),
     packFlapFull:$('packFlapFull'), packShellFull:$('packShellFull'),
     cutTrackFull:$('cutTrackFull'), cutGlowFull:$('cutGlowFull'), cutBladeFull:$('cutBladeFull'),
     pkgFlash:$('pkgFlash'), pkgBurst:$('pkgBurst'), tearParticles:$('tearParticles'),
     stepTear:$('stepTear'), stepReveal:$('stepReveal'), stepRecap:$('stepRecap'),
     cardStack:$('cardStack'), legendVeil:$('legendVeil'), revealParticles:$('revealParticles'), revealConfetti:$('revealConfetti'),
-    flipCard:$('flipCard'), flipInner:$('flipInner'), flipFront:$('flipFront'), revealHint:$('revealHint'),
+    deckBack:$('deckBack'), deckMid:$('deckMid'), deckFront:$('deckFront'), revealHint:$('revealHint'),
     recapGrid:$('recapGrid'), recapDust:$('recapDust'),
     dustN:$('dustN'), dollN:$('dollN'),
     blackout:$('blackout'), blackoutText:$('blackoutText'), btnNextDay:$('btnNextDay'), btnRestart:$('btnRestart'),
@@ -764,6 +776,39 @@
   let dragStateFull = null;
   let suppressNextClickFull = false;
   const CUT_COMMIT_THRESHOLD = 0.75;
+  // ── indizio leggendaria: deciso al momento dell'apertura, prima ancora dello strappo ──
+  let pendingLegendary = false;
+  let idleFlickerTimer = null;
+  let lastSparkleAt = 0;
+
+  function startIdleFlicker(){
+    stopIdleFlicker();
+    const tick = ()=>{
+      if(!pendingLegendary) return;
+      els.packBtnFull.classList.add('flicker');
+      setTimeout(()=> els.packBtnFull.classList.remove('flicker'), 500);
+      idleFlickerTimer = setTimeout(tick, 6000 + Math.random()*1000);
+    };
+    idleFlickerTimer = setTimeout(tick, 6000 + Math.random()*1000);
+  }
+  function stopIdleFlicker(){
+    if(idleFlickerTimer){ clearTimeout(idleFlickerTimer); idleFlickerTimer = null; }
+    els.packBtnFull.classList.remove('flicker');
+  }
+  function maybeSpawnTearSparkle(clientX, clientY){
+    if(!pendingLegendary) return;
+    const now = performance.now();
+    if(now - lastSparkleAt < 90) return;
+    lastSparkleAt = now;
+    const rect = els.packStageFull.getBoundingClientRect();
+    const s = document.createElement('div');
+    s.className = 'tear-sparkle';
+    s.style.left = (clientX - rect.left) + 'px';
+    s.style.top = (clientY - rect.top) + 'px';
+    els.packStageFull.appendChild(s);
+    requestAnimationFrame(()=> s.classList.add('fire'));
+    setTimeout(()=> s.remove(), 600);
+  }
 
   function resetPackOverlayVisuals(){
     els.packFlapFull.style.cssText = '';
@@ -776,6 +821,7 @@
     els.pkgFlash.classList.remove('fire');
     els.pkgBurst.classList.remove('fire');
     els.packBtnFull.disabled = false;
+    els.packBtnFull.classList.remove('legend-hint', 'flicker');
   }
 
   function openPackOverlay(){
@@ -784,6 +830,11 @@
     els.stepRecap.classList.remove('show');
     els.stepTear.classList.add('show');
     els.packOverlay.classList.add('show');
+    // ── la bustina viene generata subito, così l'indizio leggendaria può comparire già durante lo strappo ──
+    currentSlots = buildFourSlots();
+    currentSlotResults = [];
+    pendingLegendary = currentSlots[3].rarity === 'Leggendaria';
+    if(pendingLegendary){ els.packBtnFull.classList.add('legend-hint'); startIdleFlicker(); }
   }
 
   function onCutDownFull(e){
@@ -810,6 +861,7 @@
     els.packFlapFull.style.opacity = String(Math.min(1, progress*1.7));
     els.packFlapFull.style.transform = `translateY(${-progress*7}%) rotateX(${-progress*24}deg)`;
     els.packElFull.style.opacity = String(1 - progress*0.5);
+    maybeSpawnTearSparkle(e.clientX, e.clientY);
   }
   function onCutUpFull(){
     if(!dragStateFull) return;
@@ -913,6 +965,7 @@
   function tearPackFull(){
     const tilt = (Math.random()*10 - 5);
     els.packBtnFull.disabled = true;
+    stopIdleFlicker();
     els.cutTrackFull.classList.remove('no-transition');
     els.cutGlowFull.style.width = '90%';
     els.cutBladeFull.style.left = '95%';
@@ -940,126 +993,209 @@
   els.packBtnFull.addEventListener('click', ()=>{
     if(suppressNextClickFull){ suppressNextClickFull = false; return; }
     if(els.packBtnFull.disabled) return;
-    tearPackFull();
+    // ── un tocco da solo non apre la bustina: serve strapparla per davvero ──
+    els.packElFull.classList.add('jolt');
+    setTimeout(()=> els.packElFull.classList.remove('jolt'), 220);
   });
 
-  // ── stack di carte in stile TCG Pocket: si resta a schermo intero finché non si scopre l'ultima ──
-  function startCardSequence(){
-    currentSlots = buildFourSlots();
-    currentSlotResults = [];
-    slotIndex = 0;
-    flipLocked = false;
-    els.legendVeil.classList.remove('show');
-    document.querySelectorAll('#revealProgress .slot-dot').forEach(d => d.classList.remove('done'));
-    renderCardSlot();
-  }
+  // ── stack di carte trascinabili: 3 elementi fissi (front/mid/back) i cui ruoli ruotano ad ogni carta ──
+  let deckEls = { front:null, mid:null, back:null };
+  let cardDrag = null;
+  let cardCycleLocked = false;
+  const CARD_EXIT_THRESHOLD = 0.32;
 
-  function renderCardSlot(){
-    const item = currentSlots[slotIndex];
-    const isRare = item.rarity === 'Rara' || item.rarity === 'Ultra rara' || item.rarity === 'Leggendaria';
-    els.flipCard.classList.remove('flipped');
-    els.cardStack.classList.remove('legendary-halo', 'shaking');
-    els.flipFront.style.transform = '';
-    canAdvance = false;
-    els.revealHint.textContent = 'Tocca la carta per scoprirla';
-    els.flipFront.className = 'flip-face front' + (isRare ? ' rare-hit' : '');
-    els.flipFront.innerHTML = `
-      <div class="holo"></div>
+  function paintCardContent(el, item){
+    el.querySelector('.card-body').innerHTML = `
       <span class="glyph">${item.glyph}</span>
       <span class="rarity-tag">${item.rarity}</span>
       <span class="card-name">${item.name}</span>
-      <span class="dup-tag" id="dupTagLive"></span>`;
+      <span class="dup-tag"></span>`;
   }
 
-  let flipLocked = false;
-  function flipCurrentCard(){
-    if(els.flipCard.classList.contains('flipped') || flipLocked) return;
-    const item = currentSlots[slotIndex];
-    const isLegendary = item.rarity === 'Leggendaria';
+  function startCardSequence(){
+    slotIndex = 0;
+    cardCycleLocked = false;
+    els.legendVeil.classList.remove('show');
+    els.cardStack.classList.remove('legendary-halo', 'shaking');
+    document.querySelectorAll('#revealProgress .slot-dot').forEach(d => d.classList.remove('done'));
+    deckEls = { front:els.deckFront, mid:els.deckMid, back:els.deckBack };
+    deckEls.front.className = 'deck-card front';
+    deckEls.mid.className = 'deck-card mid';
+    deckEls.back.className = 'deck-card back';
+    deckEls.front.style.cssText = '';
+    deckEls.mid.style.cssText = '';
+    deckEls.back.style.cssText = '';
+    paintCardContent(deckEls.front, currentSlots[0]);
+    if(currentSlots[1]) { paintCardContent(deckEls.mid, currentSlots[1]); deckEls.mid.style.visibility = 'visible'; }
+    if(currentSlots[2]) { paintCardContent(deckEls.back, currentSlots[2]); deckEls.back.style.visibility = 'visible'; }
+    els.revealHint.textContent = "Trascina la carta verso l'alto ▲";
+    registerFrontCard(0);
+  }
+
+  // ── i doppioni diventano polvere e il gran finale leggendaria parte non appena la carta arriva in primo piano ──
+  function registerFrontCard(idx){
+    const item = currentSlots[idx];
     const isRarePlus = item.rarity === 'Rara' || item.rarity === 'Ultra rara' || item.rarity === 'Leggendaria';
-
-    function doFlip(){
-      els.flipCard.classList.add('flipped');
-      playChime(isLegendary);
-      if(isLegendary){
-        els.cardStack.classList.add('legendary-halo');
-        els.flipFront.classList.add('legendary');
-        spawnConfettiFx(els.revealConfetti);
-        spawnParticlesFx(els.revealParticles, RARITY_COLOR['Leggendaria'], 34, true);
-      } else if(isRarePlus){
-        spawnParticlesFx(els.revealParticles, RARITY_COLOR[item.rarity], 14, false);
-      }
-
-      // ── i doppioni diventano polvere: qui viene registrato nella collezione persistente ──
-      const already = collection[item.name] || 0;
-      collection[item.name] = already + 1;
-      let earned = 0;
-      if(already > 0){
-        earned = DUST_BY_RARITY[item.rarity] || 2;
-        dust += earned;
-        document.getElementById('dupTagLive').textContent = 'Doppione → +' + earned + ' ✨';
-      }
-      currentSlotResults[slotIndex] = { item, isDup: already > 0, earned };
-      updateDustDisplay();
-
-      document.querySelectorAll('#revealProgress .slot-dot')[slotIndex].classList.add('done');
-      els.revealHint.textContent = '';
-      flipLocked = false;
-      setTimeout(()=>{
-        canAdvance = true;
-        els.revealHint.textContent = slotIndex < 3 ? 'Tocca per continuare ▶' : 'Tocca per il riepilogo ▶';
-      }, isLegendary ? 700 : 400);
+    deckEls.front.classList.toggle('rare-hit', isRarePlus);
+    const already = collection[item.name] || 0;
+    collection[item.name] = already + 1;
+    let earned = 0;
+    if(already > 0){
+      earned = DUST_BY_RARITY[item.rarity] || 2;
+      dust += earned;
     }
-
-    if(isLegendary){
-      // ── attesa "wow": velo con raggi dorati e tremolio prima di svelare la leggendaria ──
-      flipLocked = true;
-      els.revealHint.textContent = '';
-      els.cardStack.classList.add('shaking');
-      els.legendVeil.classList.add('show');
-      playTearSound();
-      setTimeout(()=>{
-        els.cardStack.classList.remove('shaking');
-        els.legendVeil.classList.remove('show');
-        doFlip();
-      }, 1100);
-    } else {
-      doFlip();
-    }
+    currentSlotResults[idx] = { item, isDup: already > 0, earned };
+    updateDustDisplay();
+    const dupTag = deckEls.front.querySelector('.dup-tag');
+    if(dupTag) dupTag.textContent = already > 0 ? ('Doppione → +' + earned + ' ✨') : '';
+    document.querySelectorAll('#revealProgress .slot-dot')[idx].classList.add('done');
+    els.revealHint.textContent = idx < 3 ? "Trascina la carta verso l'alto ▲" : 'Trascina per il riepilogo ▲';
+    if(item.rarity === 'Leggendaria'){ legendaryFinale(); }
+    else if(isRarePlus){ spawnParticlesFx(els.revealParticles, RARITY_COLOR[item.rarity], 14, false); playChime(false); }
   }
-  let canAdvance = false;
-  function advanceOrFlip(){
-    if(flipLocked) return;
-    if(!els.flipCard.classList.contains('flipped')){ flipCurrentCard(); }
-    else if(canAdvance){
-      canAdvance = false;
-      slotIndex++;
-      if(slotIndex < 4){ renderCardSlot(); } else { showRecap(); }
-    }
-  }
-  els.stepReveal.addEventListener('click', advanceOrFlip);
 
-  // ── riflesso holo che segue il dito/mouse sulla carta rivelata, come una vera carta lucida ──
+  function legendaryFinale(){
+    els.cardStack.classList.add('legendary-halo');
+    deckEls.front.classList.add('legendary');
+    playChime(true);
+    if(navigator.vibrate){ navigator.vibrate([40,30,40,30,140]); }
+    spawnConfettiFx(els.revealConfetti);
+    setTimeout(()=> spawnConfettiFx(els.revealConfetti), 380);
+    spawnParticlesFx(els.revealParticles, RARITY_COLOR['Leggendaria'], 34, true);
+    const miniColors = ['var(--c-legend-1)','var(--c-legend-2)','var(--c-legend-3)','var(--c-legend-4)','var(--c-legend-5)'];
+    miniColors.forEach((color, i)=>{
+      setTimeout(()=> spawnMiniBurst(color), 150 + i*180);
+    });
+    els.legendVeil.classList.add('show');
+    setTimeout(()=> els.legendVeil.classList.remove('show'), 1400);
+  }
+  function spawnMiniBurst(color){
+    const mini = document.createElement('div');
+    mini.className = 'mini-burst';
+    mini.style.left = (15 + Math.random()*70) + '%';
+    mini.style.top = (15 + Math.random()*70) + '%';
+    mini.style.setProperty('--mini-color', color);
+    els.revealParticles.appendChild(mini);
+    requestAnimationFrame(()=> mini.classList.add('fire'));
+    setTimeout(()=> mini.remove(), 700);
+  }
+
+  // ── trascinamento verticale della carta in primo piano: unico modo per avanzare ──
+  function onCardPointerDown(e){
+    if(cardCycleLocked) return;
+    cardDrag = { startX:e.clientX, startY:e.clientY, moved:false, dy:0, progress:0 };
+    try{ els.cardStack.setPointerCapture(e.pointerId); }catch(err){}
+  }
+  function onCardPointerMove(e){
+    if(!cardDrag || cardCycleLocked) return;
+    const dy = e.clientY - cardDrag.startY;
+    const dx = e.clientX - cardDrag.startX;
+    if(!cardDrag.moved && Math.abs(dy) > 5){
+      cardDrag.moved = true;
+      deckEls.front.style.transition = 'none';
+      deckEls.front.classList.add('dragging');
+    }
+    if(!cardDrag.moved) return;
+    e.preventDefault();
+    const translateY = dy > 0 ? dy * 0.28 : dy; // resistenza se si tira verso il basso
+    cardDrag.dy = translateY;
+    const rect = els.cardStack.getBoundingClientRect();
+    cardDrag.progress = Math.max(0, Math.min(1, -translateY / (rect.height * 0.55)));
+    deckEls.front.style.transform = `translateY(${translateY}px) translateX(${dx*0.08}px) rotate(${dx*0.03}deg)`;
+  }
+  function onCardPointerUp(){
+    if(!cardDrag) return;
+    const moved = cardDrag.moved;
+    const progress = cardDrag.progress || 0;
+    const dy = cardDrag.dy || 0;
+    cardDrag = null;
+    if(cardCycleLocked) return;
+    deckEls.front.classList.remove('dragging');
+    if(!moved){
+      // ── tocco senza trascinamento: solo un piccolo scatto di rifiuto, non avanza ──
+      deckEls.front.classList.add('jolt');
+      setTimeout(()=> deckEls.front.classList.remove('jolt'), 220);
+      return;
+    }
+    if(progress >= CARD_EXIT_THRESHOLD || dy < -70){ completeCardExit(); }
+    else { springBackCard(); }
+  }
+  function onCardPointerCancel(){
+    if(cardDrag && cardDrag.moved && !cardCycleLocked){ deckEls.front.classList.remove('dragging'); springBackCard(); }
+    cardDrag = null;
+  }
+  function springBackCard(){
+    deckEls.front.style.transition = 'transform 0.32s cubic-bezier(.34,1.56,.64,1)';
+    deckEls.front.style.transform = '';
+  }
+  function completeCardExit(){
+    cardCycleLocked = true;
+    const exitingEl = deckEls.front;
+    // ── uscita che parte lentissima e accelera progressivamente ──
+    exitingEl.style.transition = 'transform 0.6s cubic-bezier(.61,.02,.79,.15), opacity 0.4s ease-in 0.15s';
+    exitingEl.style.transform = `translateY(-170%) rotate(${(Math.random()*8-4)}deg)`;
+    exitingEl.style.opacity = '0';
+
+    if(slotIndex >= 3){
+      // ── era l'ultima carta: dopo l'uscita si passa al riepilogo ──
+      setTimeout(()=>{ showRecap(); cardCycleLocked = false; }, 620);
+      return;
+    }
+
+    // ── la carta dietro (già a faccia in su) prende subito il suo posto, senza reveal ──
+    const promotedMid = deckEls.mid;
+    promotedMid.style.transition = 'transform 0.22s ease-out, opacity 0.22s ease-out';
+    promotedMid.className = 'deck-card front';
+    promotedMid.style.transform = '';
+    promotedMid.style.opacity = '';
+
+    const promotedBack = deckEls.back;
+    promotedBack.style.transition = 'transform 0.22s ease-out, opacity 0.22s ease-out';
+    promotedBack.className = 'deck-card mid';
+    promotedBack.style.transform = '';
+    promotedBack.style.opacity = '';
+
+    slotIndex++;
+    registerFrontCard(slotIndex);
+
+    setTimeout(()=>{
+      // ── la vecchia carta in primo piano viene riciclata come nuova carta "in fondo" ──
+      exitingEl.style.transition = 'none';
+      exitingEl.style.transform = '';
+      exitingEl.style.opacity = '';
+      exitingEl.className = 'deck-card back';
+      const nextBackIdx = slotIndex + 2;
+      if(nextBackIdx < 4){
+        paintCardContent(exitingEl, currentSlots[nextBackIdx]);
+        exitingEl.style.visibility = 'visible';
+      } else {
+        exitingEl.style.visibility = 'hidden';
+      }
+      deckEls = { front:promotedMid, mid:promotedBack, back:exitingEl };
+      cardCycleLocked = false;
+    }, 230);
+  }
+  els.cardStack.addEventListener('pointerdown', onCardPointerDown);
+  els.cardStack.addEventListener('pointermove', onCardPointerMove);
+  els.cardStack.addEventListener('pointerup', onCardPointerUp);
+  els.cardStack.addEventListener('pointercancel', onCardPointerCancel);
+
+  // ── riflesso holo che segue il dito/mouse sulla carta in primo piano, come una vera carta lucida ──
   function updateHoloTilt(clientX, clientY){
-    if(!els.flipCard.classList.contains('flipped')) return;
-    const holo = els.flipFront.querySelector('.holo');
+    if(!deckEls.front) return;
+    const holo = deckEls.front.querySelector('.holo');
     if(!holo) return;
-    const rect = els.flipCard.getBoundingClientRect();
+    const rect = els.cardStack.getBoundingClientRect();
     const x = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
     const y = Math.max(0, Math.min(1, (clientY - rect.top) / rect.height));
-    const rx = (0.5 - y) * 12, ry = (x - 0.5) * 12;
-    els.flipFront.style.transform = `rotateY(180deg) rotateX(${rx}deg) rotateY(${ry}deg)`;
     holo.style.setProperty('--holo-a', RARITY_COLOR[currentSlots[slotIndex] ? currentSlots[slotIndex].rarity : 'Comune']);
     holo.style.setProperty('--holo-b', 'transparent');
     holo.style.backgroundPosition = `${x*100}% ${y*100}%`;
   }
-  els.flipCard.addEventListener('mousemove', e => updateHoloTilt(e.clientX, e.clientY));
-  els.flipCard.addEventListener('mouseleave', ()=>{ els.flipFront.style.transform = ''; });
-  els.flipCard.addEventListener('touchmove', e => {
+  els.cardStack.addEventListener('mousemove', e => updateHoloTilt(e.clientX, e.clientY));
+  els.cardStack.addEventListener('touchmove', e => {
     if(e.touches[0]) updateHoloTilt(e.touches[0].clientX, e.touches[0].clientY);
   }, { passive:true });
-
-
 
   function showRecap(){
     els.stepReveal.classList.remove('show');
