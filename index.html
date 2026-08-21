@@ -169,8 +169,28 @@
   .pixel-sprite .p-head{ position:absolute; top:5px; left:6px; width:14px; height:10px; background:var(--skin-c,#f4c99b); border:2px solid var(--gb-0); }
   .pixel-sprite .p-eyes{ position:absolute; top:9px; left:9px; width:2px; height:2px; background:var(--gb-0); box-shadow:5px 0 0 var(--gb-0); }
   .pixel-sprite .p-body{ position:absolute; top:14px; left:3px; width:18px; height:12px; background:var(--shirt-c,#3f72c4); border:2px solid var(--gb-0); border-top:none; }
-  .pixel-sprite .p-legs{ position:absolute; top:25px; left:5px; width:14px; height:9px; background:var(--pants-c,#1c3d78); border:2px solid var(--gb-0); border-top:none; }
+  .pixel-sprite .p-leg-l, .pixel-sprite .p-leg-r{ position:absolute; top:25px; width:6px; height:9px; background:var(--pants-c,#1c3d78); border:2px solid var(--gb-0); border-top:none; transform-origin:top center; }
+  .pixel-sprite .p-leg-l{ left:4px; }
+  .pixel-sprite .p-leg-r{ left:13px; }
+  .pixel-sprite.walking .p-leg-l{ animation: legStepL 0.3s steps(2) infinite; }
+  .pixel-sprite.walking .p-leg-r{ animation: legStepR 0.3s steps(2) infinite; }
+  @keyframes legStepL{ 0%,100%{ transform:rotate(16deg) translateX(-1px);} 50%{ transform:rotate(-16deg) translateX(1px);} }
+  @keyframes legStepR{ 0%,100%{ transform:rotate(-16deg) translateX(1px);} 50%{ transform:rotate(16deg) translateX(-1px);} }
   .pixel-sprite .p-acc{ position:absolute; display:none; }
+
+  /* sprite sheet animato (immagine caricata con 4 fotogrammi affiancati, nome file "...-walk") */
+  .pixel-sprite.has-anim-sheet, .companion.has-anim-sheet, .flyer.has-anim-sheet{
+    background-repeat:no-repeat; background-position:0 0; background-size:400% 100%;
+  }
+  .pixel-sprite.has-anim-sheet > *, .companion.has-anim-sheet > *, .flyer.has-anim-sheet > *{ display:none; }
+  .pixel-sprite.has-anim-sheet.walking, .companion.has-anim-sheet.walking, .flyer.has-anim-sheet.walking{
+    animation-name: spriteWalkSheet; animation-duration:0.6s; animation-timing-function:steps(4); animation-iteration-count:infinite;
+  }
+  @keyframes spriteWalkSheet{ from{ background-position-x:0%; } to{ background-position-x:100%; } }
+  /* quando c'è uno sprite sheet animato, il "bob" statico dei blocchetti CSS lascia il posto
+     al ciclo dei 4 fotogrammi, mantenendo lo stesso movimento orizzontale di camminata */
+  #playerSprite.has-anim-sheet.walking{ animation: walkIn 1.6s steps(8) forwards, spriteWalkSheet 0.6s steps(4) infinite; }
+  #companionSprite.has-anim-sheet.walking{ animation: walkInComp 1.7s steps(8) 0.22s forwards, spriteWalkSheet 0.6s steps(4) infinite; }
 
   .char-player{ --hat-c:#d64045; --skin-c:#f4c99b; --shirt-c:#3f72c4; --pants-c:#1c3d78; }
   .char-nurse{ --hat-c:#fff6df; --skin-c:#f4c99b; --shirt-c:#ffd7e2; --pants-c:#fff6df; }
@@ -440,14 +460,14 @@
     </div>
     <div class="pixel-sprite char-player" id="playerSprite">
       <div class="p-hat"></div><div class="p-head"></div><div class="p-eyes"></div>
-      <div class="p-body"></div><div class="p-acc"></div><div class="p-legs"></div>
+      <div class="p-body"></div><div class="p-acc"></div><div class="p-leg-l"></div><div class="p-leg-r"></div>
     </div>
     <div class="companion" id="companionSprite">
       <div class="c-spike"></div><div class="c-body"></div><div class="c-eye"></div>
     </div>
     <div class="pixel-sprite char-nurse" id="npcSprite">
       <div class="p-hat"></div><div class="p-head"></div><div class="p-eyes"></div>
-      <div class="p-body"></div><div class="p-acc"></div><div class="p-legs"></div>
+      <div class="p-body"></div><div class="p-acc"></div><div class="p-leg-l"></div><div class="p-leg-r"></div>
     </div>
   </div>
 
@@ -688,21 +708,22 @@
     if(chap.npc){
       els.npcSprite.style.display = 'block';
       els.npcSprite.className = 'pixel-sprite ' + chap.npc;
-      els.npcSprite.innerHTML = '<div class="p-hat"></div><div class="p-head"></div><div class="p-eyes"></div><div class="p-body"></div><div class="p-acc"></div><div class="p-legs"></div>';
+      els.npcSprite.innerHTML = '<div class="p-hat"></div><div class="p-head"></div><div class="p-eyes"></div><div class="p-body"></div><div class="p-acc"></div><div class="p-leg-l"></div><div class="p-leg-r"></div>';
       els.flyer.classList.add('hide');
     } else {
       els.npcSprite.style.display = 'none';
       els.flyer.classList.remove('hide');
     }
 
-    // piccola pausa prima di far camminare l'omino, così si vede lo scenario prima del movimento
-    setTimeout(()=>{
-      els.playerSprite.classList.add('walking');
-      els.companionSprite.classList.add('walking');
-      setTimeout(()=> showDialog(chap, 0), 1650);
-    }, 300);
-
-    applyCustomAssets();
+    // il cammino parte solo dopo che sfondo e sprite sono stati verificati/caricati,
+    // così non si vede più camminare nel nero prima che lo sfondo compaia
+    applyCustomAssets().then(()=>{
+      setTimeout(()=>{
+        els.playerSprite.classList.add('walking');
+        els.companionSprite.classList.add('walking');
+        setTimeout(()=> showDialog(chap, 0), 1650);
+      }, 200);
+    });
   }
 
   function showDialog(chap, lineIdx){
@@ -1181,8 +1202,15 @@
 
   function setSpriteImage(el, url){
     if(!el) return;
+    el.classList.remove('has-anim-sheet');
     if(url){ el.classList.add('has-custom-img'); el.style.backgroundImage = `url(${url})`; }
     else { el.classList.remove('has-custom-img'); el.style.backgroundImage = ''; }
+  }
+  function setSpriteAnimSheet(el, url){
+    if(!el) return;
+    el.classList.remove('has-custom-img');
+    el.classList.add('has-anim-sheet');
+    el.style.backgroundImage = `url(${url})`;
   }
 
   // ── immagini caricate da GitHub Pages: immagini/<tipo>/<set>/<chiave>.png ──
@@ -1198,36 +1226,55 @@
   // come "a.png","b.png"... si prova prima il nome semantico e poi questa lettera
   const SPRITE_LETTER_FALLBACK = { player:'a', nurse:'b', professor:'c', shopkeeper:'d', mailman:'e', flyer:'f', boss:'g' };
 
+  // prova TUTTI i candidati (nomi × estensioni) in parallelo invece che uno alla volta:
+  // molto più veloce quando un'immagine non esiste ancora (niente attese in sequenza inutili)
   function resolveRepoImage(type, set, keyCandidates, cb){
     const keys = Array.isArray(keyCandidates) ? keyCandidates.filter(Boolean) : [keyCandidates];
     const cacheKey = `${type}/${set}/${keys.join('|')}`;
     if(cacheKey in repoImgCache){ cb(repoImgCache[cacheKey]); return; }
-    let ki = 0, ei = 0;
-    (function tryNext(){
-      if(ki >= keys.length){ repoImgCache[cacheKey] = null; cb(null); return; }
-      if(ei >= EXT_CANDIDATES.length){ ki++; ei = 0; tryNext(); return; }
-      const url = `${IMG_BASE}/${type}/${set}/${keys[ki]}.${EXT_CANDIDATES[ei]}`;
+    const candidates = [];
+    keys.forEach(k => EXT_CANDIDATES.forEach(ext => candidates.push(`${IMG_BASE}/${type}/${set}/${k}.${ext}`)));
+    let remaining = candidates.length;
+    const ok = new Array(candidates.length).fill(false);
+    function finish(){
+      const winIdx = ok.findIndex(v => v);
+      const result = winIdx === -1 ? null : candidates[winIdx];
+      repoImgCache[cacheKey] = result;
+      cb(result);
+    }
+    candidates.forEach((url, idx)=>{
       const img = new Image();
-      img.onload = ()=>{ repoImgCache[cacheKey] = url; cb(url); };
-      img.onerror = ()=>{ ei++; tryNext(); };
+      img.onload = ()=>{ ok[idx] = true; remaining--; if(remaining === 0) finish(); };
+      img.onerror = ()=>{ remaining--; if(remaining === 0) finish(); };
       img.src = url;
-    })();
+    });
+  }
+  function resolveRepoImageAsync(type, set, keyCandidates){
+    return new Promise(resolve => resolveRepoImage(type, set, keyCandidates, resolve));
+  }
+
+  // per ogni personaggio si prova prima uno sprite sheet animato "<chiave>-walk" (4 fotogrammi
+  // affiancati, vedi README) e solo se manca si passa all'immagine singola statica di prima
+  function resolveSpriteFull(el, key, manualOverride){
+    if(!el) return Promise.resolve();
+    if(manualOverride){ setSpriteImage(el, manualOverride); return Promise.resolve(); }
+    const letter = SPRITE_LETTER_FALLBACK[key];
+    const walkKeys = [key + '-walk', letter ? letter + '-walk' : null];
+    return resolveRepoImageAsync('sprite', activeSpriteSet, walkKeys).then(walkUrl=>{
+      if(walkUrl){ setSpriteAnimSheet(el, walkUrl); return; }
+      return resolveRepoImageAsync('sprite', activeSpriteSet, [key, letter]).then(url => setSpriteImage(el, url));
+    });
   }
 
   function applyCustomAssets(){
     const chap = getChapter(day);
+    const tasks = [];
 
-    function resolveSprite(el, key){
-      if(!el) return;
-      const manual = customAssets.sprites[key];
-      if(manual){ setSpriteImage(el, manual); return; }
-      resolveRepoImage('sprite', activeSpriteSet, [key, SPRITE_LETTER_FALLBACK[key]], url => setSpriteImage(el, url));
-    }
-    resolveSprite(els.playerSprite, 'player');
-    resolveSprite(els.flyer, 'flyer');
+    tasks.push(resolveSpriteFull(els.playerSprite, 'player', customAssets.sprites.player));
+    tasks.push(resolveSpriteFull(els.flyer, 'flyer', customAssets.sprites.flyer));
     if(chap.npc){
       const npcKey = chap.npc.replace('char-', '');
-      resolveSprite(els.npcSprite, npcKey);
+      tasks.push(resolveSpriteFull(els.npcSprite, npcKey, customAssets.sprites[npcKey]));
     }
 
     // il compagno vive nella sua cartella dedicata immagini/companion/<set>/ — per ora il file
@@ -1236,7 +1283,12 @@
     if(els.companionSprite){
       const manualCompanion = customAssets.sprites.companion;
       if(manualCompanion){ setSpriteImage(els.companionSprite, manualCompanion); }
-      else { resolveRepoImage('companion', activeSpriteSet, ['companion', 'pikachu'], url => setSpriteImage(els.companionSprite, url)); }
+      else {
+        tasks.push(resolveRepoImageAsync('companion', activeSpriteSet, ['companion-walk', 'pikachu-walk']).then(walkUrl=>{
+          if(walkUrl){ setSpriteAnimSheet(els.companionSprite, walkUrl); return; }
+          return resolveRepoImageAsync('companion', activeSpriteSet, ['companion', 'pikachu']).then(url => setSpriteImage(els.companionSprite, url));
+        }));
+      }
     }
 
     const groundEl = els.stage.querySelector('.ground');
@@ -1247,7 +1299,7 @@
     } else {
       // uno sfondo diverso per ogni giorno esatto (1.png = giorno 1, 2.png = giorno 2, ...),
       // con il nome del capitolo come ripiego se preferisci nominarli per scena invece che per giorno
-      resolveRepoImage('sfondi', activeBgSet, [String(day), chap.id], url=>{
+      tasks.push(resolveRepoImageAsync('sfondi', activeBgSet, [String(day), chap.id]).then(url=>{
         if(url){
           els.stage.style.backgroundImage = `url(${url})`; els.stage.style.backgroundSize = 'cover'; els.stage.style.backgroundPosition = 'center';
           if(groundEl) groundEl.style.background = 'transparent';
@@ -1255,8 +1307,10 @@
           els.stage.style.backgroundImage = '';
           if(groundEl) groundEl.style.background = '';
         }
-      });
+      }));
     }
+
+    return Promise.all(tasks);
   }
 
   els.importBtn.addEventListener('click', ()=>{ buildImportPanel(); els.importOverlay.classList.add('show'); });
