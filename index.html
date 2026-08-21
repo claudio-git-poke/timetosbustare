@@ -264,7 +264,7 @@
   /* ── overlay a schermo intero: la bustina vera e propria da tagliare, ripresa dal mockup principale ── */
   .pack-overlay{
     position:absolute; inset:0; z-index:60; background:rgba(6,10,26,0.94);
-    display:none; align-items:center; justify-content:center; padding:1.1rem; overflow-y:auto;
+    display:none; align-items:center; justify-content:center; padding:0.45rem; overflow-y:auto;
   }
   .pack-overlay.show{ display:flex; }
   .pack-stage-full{ position:relative; width:100%; max-width:280px; display:flex; align-items:center; justify-content:center; perspective:900px; }
@@ -310,13 +310,13 @@
   @keyframes flashPulseFull{ 0%{opacity:0;} 15%{opacity:0.9;} 100%{opacity:0;} }
 
   /* ── STEP dentro l'overlay: stack di carte in stile TCG Pocket (flip 3D una alla volta) ── */
-  .ov-step{ display:none; width:100%; max-width:340px; flex-direction:column; align-items:center; gap:1rem; }
+  .ov-step{ display:none; width:100%; max-width:340px; flex-direction:column; align-items:center; gap:0.55rem; cursor:pointer; }
   .ov-step.show{ display:flex; }
   .reveal-progress{ display:flex; gap:0.4rem; }
   .slot-dot{ width:9px; height:9px; border:2px solid var(--gb-4); background:rgba(255,255,255,0.15); }
   .slot-dot.done{ background:var(--gold); border-color:var(--gb-0); }
 
-  .card-stack{ position:relative; width:min(64vw,220px); aspect-ratio:210/290; }
+  .card-stack{ position:relative; height:min(43vh, 240px); aspect-ratio:210/290; }
   .stack-card{
     position:absolute; inset:0; border-radius:0; background:var(--menu-window-bg);
     border:3px solid var(--gb-0); box-shadow:inset 0 0 0 2px var(--gb-4);
@@ -534,7 +534,6 @@
         <div class="fx-confetti" id="revealConfetti"></div>
       </div>
       <div class="reveal-hint" id="revealHint">Tocca la carta per scoprirla</div>
-      <button class="next-slot-btn" id="ovNextBtn" style="display:none;">Avanti ▶</button>
     </div>
 
     <div class="ov-step" id="stepRecap">
@@ -686,7 +685,7 @@
     stepTear:$('stepTear'), stepReveal:$('stepReveal'), stepRecap:$('stepRecap'),
     cardStack:$('cardStack'), legendVeil:$('legendVeil'), revealParticles:$('revealParticles'), revealConfetti:$('revealConfetti'),
     flipCard:$('flipCard'), flipInner:$('flipInner'), flipFront:$('flipFront'), revealHint:$('revealHint'),
-    ovNextBtn:$('ovNextBtn'), recapGrid:$('recapGrid'), recapDust:$('recapDust'), ovCloseBtn:$('ovCloseBtn'),
+    recapGrid:$('recapGrid'), recapDust:$('recapDust'), ovCloseBtn:$('ovCloseBtn'),
     dustN:$('dustN'),
     blackout:$('blackout'), btnNextDay:$('btnNextDay'), btnRestart:$('btnRestart'),
     importBtn:$('importBtn'), importOverlay:$('importOverlay'), importBody:$('importBody'),
@@ -946,7 +945,7 @@
     els.flipCard.classList.remove('flipped');
     els.cardStack.classList.remove('legendary-halo', 'shaking');
     els.flipFront.style.transform = '';
-    els.ovNextBtn.style.display = 'none';
+    canAdvance = false;
     els.revealHint.textContent = 'Tocca la carta per scoprirla';
     els.flipFront.className = 'flip-face front' + (isRare ? ' rare-hit' : '');
     els.flipFront.innerHTML = `
@@ -992,8 +991,8 @@
       els.revealHint.textContent = '';
       flipLocked = false;
       setTimeout(()=>{
-        els.ovNextBtn.textContent = slotIndex < 3 ? 'Avanti ▶' : 'Vedi il riepilogo ▶';
-        els.ovNextBtn.style.display = 'block';
+        canAdvance = true;
+        els.revealHint.textContent = slotIndex < 3 ? 'Tocca per continuare ▶' : 'Tocca per il riepilogo ▶';
       }, isLegendary ? 700 : 400);
     }
 
@@ -1013,7 +1012,17 @@
       doFlip();
     }
   }
-  els.flipCard.addEventListener('click', flipCurrentCard);
+  let canAdvance = false;
+  function advanceOrFlip(){
+    if(flipLocked) return;
+    if(!els.flipCard.classList.contains('flipped')){ flipCurrentCard(); }
+    else if(canAdvance){
+      canAdvance = false;
+      slotIndex++;
+      if(slotIndex < 4){ renderCardSlot(); } else { showRecap(); }
+    }
+  }
+  els.stepReveal.addEventListener('click', advanceOrFlip);
 
   // ── riflesso holo che segue il dito/mouse sulla carta rivelata, come una vera carta lucida ──
   function updateHoloTilt(clientX, clientY){
@@ -1036,11 +1045,6 @@
   }, { passive:true });
 
 
-  els.ovNextBtn.addEventListener('click', ()=>{
-    slotIndex++;
-    if(slotIndex < 4){ renderCardSlot(); }
-    else { showRecap(); }
-  });
 
   function showRecap(){
     els.stepReveal.classList.remove('show');
@@ -1106,6 +1110,16 @@
     { bpm:126, lead:['G4','A4','C5','A4','G4','E4','D4','E4'], bass:['C3','E3','G3','E3'], harmony:['R','E4','R','R','R','G4','R','R'] },
     { bpm:140, lead:['C5','B4','G4','A4','C5','D5','C5','G4'], bass:['C3','G3','E3','G3'], harmony:['E4','R','G4','R','E4','R','G4','R'] },
   ];
+  // traccia dedicata al giorno del Boss: tonalità minore, più veloce, con un pad "corale" sotto
+  // (più oscillatori leggermente stonati che sostengono un accordo, per un effetto voci senza
+  // dover sintetizzare parole vere) — niente testo in latino: non è realizzabile con onde semplici
+  // senza sintesi vocale vera, ma l'obiettivo "scontro finale drammatico" resta lo stesso
+  const BOSS_TRACK = {
+    bpm: 160,
+    lead: ['D4','R','F4','G4','A4','R','G4','F4','D4','R','F4','A4','C5','A4','G4','F4'],
+    bass: ['D3','D3','A3','A3','F3','F3','C4','C4'],
+    choir: [['D3','F3','A3'], ['A3','C4','E4'], ['F3','A3','C4'], ['C3','E3','G3']],
+  };
   let musicTimer = null;
   let currentWeek = -1;
   let musicMuted = localStorage.getItem('cardsync_proto_music_muted') === '1';
@@ -1122,6 +1136,24 @@
     gain.gain.exponentialRampToValueAtTime(0.0001, startTime + dur * 0.92);
     osc.connect(gain); gain.connect(ctx.destination);
     osc.start(startTime); osc.stop(startTime + dur);
+  }
+
+  // pad "corale": 3 oscillatori per nota, leggermente stonati tra loro (qualche cent di differenza),
+  // con un attacco/rilascio lento da tappeto sonoro invece che da singola nota secca
+  function playPadNote(ctx, freq, startTime, dur, peakGain){
+    if(!freq) return;
+    [-4, 0, 5].forEach(cents=>{
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.value = freq * Math.pow(2, cents / 1200);
+      gain.gain.setValueAtTime(0.0001, startTime);
+      gain.gain.linearRampToValueAtTime(peakGain, startTime + dur * 0.3);
+      gain.gain.linearRampToValueAtTime(peakGain * 0.7, startTime + dur * 0.75);
+      gain.gain.linearRampToValueAtTime(0.0001, startTime + dur * 0.98);
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.start(startTime); osc.stop(startTime + dur);
+    });
   }
 
   function stopMusic(){ if(musicTimer){ clearTimeout(musicTimer); musicTimer = null; } }
@@ -1141,11 +1173,36 @@
     })();
   }
 
+  function playBossTrack(){
+    stopMusic();
+    if(musicMuted) return;
+    const ctx = getAudioCtx(); if(!ctx) return;
+    const stepDur = 60 / BOSS_TRACK.bpm / 2;
+    const loopDur = BOSS_TRACK.lead.length * stepDur;
+    (function scheduleLoop(){
+      const startAt = ctx.currentTime + 0.05;
+      BOSS_TRACK.lead.forEach((n, i) => playChiptuneNote(ctx, NOTE_FREQ[n], startAt + i * stepDur, stepDur, 'sawtooth', 0.05));
+      BOSS_TRACK.bass.forEach((n, i) => playChiptuneNote(ctx, NOTE_FREQ[n], startAt + i * stepDur * 2, stepDur * 2, 'triangle', 0.06));
+      const chordDur = loopDur / BOSS_TRACK.choir.length;
+      BOSS_TRACK.choir.forEach((chord, ci) => {
+        chord.forEach((n, ni) => playPadNote(ctx, NOTE_FREQ[n], startAt + ci * chordDur, chordDur, 0.02 + ni * 0.004));
+      });
+      musicTimer = setTimeout(scheduleLoop, loopDur * 1000);
+    })();
+  }
+
+  // sceglie ed avvia la traccia giusta per lo stato corrente (settimana normale o Boss)
+  function playCurrentTrack(){
+    if(currentWeek === 'boss'){ playBossTrack(); }
+    else if(currentWeek !== -1){ playWeekTrack(currentWeek); }
+  }
+
   function updateMusicForDay(){
-    const weekIdx = Math.min(WEEK_TRACKS.length - 1, Math.floor((day - 1) / 7));
-    if(weekIdx !== currentWeek){
-      currentWeek = weekIdx;
-      if(!musicMuted && audioCtx) playWeekTrack(weekIdx);
+    const chap = getChapter(day);
+    const target = chap.id === 'boss' ? 'boss' : Math.min(WEEK_TRACKS.length - 1, Math.floor((day - 1) / 7));
+    if(target !== currentWeek){
+      currentWeek = target;
+      if(!musicMuted && audioCtx) playCurrentTrack();
     }
   }
 
@@ -1153,14 +1210,15 @@
     musicMuted = !musicMuted;
     localStorage.setItem('cardsync_proto_music_muted', musicMuted ? '1' : '0');
     els.musicToggle.textContent = musicMuted ? '🔇' : '🔊';
-    if(musicMuted){ stopMusic(); } else { playWeekTrack(currentWeek); }
+    if(musicMuted){ stopMusic(); } else { playCurrentTrack(); }
   });
 
   // l'audio nei browser parte solo dopo un gesto dell'utente: al primo tocco/click
   // sulla pagina avviamo (o riprendiamo) l'AudioContext e la traccia della settimana corrente
   document.addEventListener('pointerdown', function firstGesture(){
     document.removeEventListener('pointerdown', firstGesture);
-    if(!musicMuted) playWeekTrack(currentWeek === -1 ? Math.floor((day - 1) / 7) : currentWeek);
+    if(currentWeek === -1) currentWeek = getChapter(day).id === 'boss' ? 'boss' : Math.floor((day - 1) / 7);
+    if(!musicMuted) playCurrentTrack();
   }, { once:true });
 
 
@@ -1302,6 +1360,8 @@
   // finché gli sprite (tranne il compagno, che ha una sua cartella dedicata) sono caricati
   // come "a.png","b.png"... si prova prima il nome semantico e poi questa lettera
   const SPRITE_LETTER_FALLBACK = { player:'a', nurse:'b', professor:'c', shopkeeper:'d', mailman:'e', flyer:'f', boss:'g' };
+  // nomi alternativi scelti liberamente per alcuni personaggi (provati anche loro, oltre a nome/lettera)
+  const SPRITE_NAME_ALIASES = { nurse:['joy'], professor:['saggio'] };
 
   // prova TUTTI i candidati (nomi × estensioni) in parallelo invece che uno alla volta:
   // molto più veloce quando un'immagine non esiste ancora (niente attese in sequenza inutili)
@@ -1331,15 +1391,23 @@
   }
 
   // per ogni personaggio si prova prima uno sprite sheet animato "<chiave>-walk" (4 fotogrammi
-  // affiancati, vedi README) e solo se manca si passa all'immagine singola statica di prima
+  // affiancati, vedi README) e solo se manca si passa all'immagine singola statica di prima;
+  // come ultimissimo ripiego si prova anche la cartella "immagini/sprite/png/" (utile per test
+  // rapidi senza dover scegliere se è un set "default" o "premium")
   function resolveSpriteFull(el, key, manualOverride){
     if(!el) return Promise.resolve();
     if(manualOverride){ setSpriteImage(el, manualOverride); return Promise.resolve(); }
     const letter = SPRITE_LETTER_FALLBACK[key];
-    const walkKeys = [key + '-walk', letter ? letter + '-walk' : null];
+    const aliases = SPRITE_NAME_ALIASES[key] || [];
+    const staticKeys = [key, letter, ...aliases];
+    const walkKeys = staticKeys.map(k => k ? k + '-walk' : null);
     return resolveRepoImageAsync('sprite', activeSpriteSet, walkKeys).then(walkUrl=>{
       if(walkUrl){ setSpriteAnimSheet(el, walkUrl); return; }
-      return resolveRepoImageAsync('sprite', activeSpriteSet, [key, letter]).then(url => setSpriteImage(el, url));
+      return resolveRepoImageAsync('sprite', activeSpriteSet, staticKeys).then(url=>{
+        if(url){ setSpriteImage(el, url); return; }
+        if(activeSpriteSet === 'png') return; // già provato sopra, eviterebbe solo una richiesta doppia
+        return resolveRepoImageAsync('sprite', 'png', staticKeys).then(url2 => setSpriteImage(el, url2));
+      });
     });
   }
 
@@ -1372,17 +1440,17 @@
     const manualBg = customAssets.backgrounds[chap.id];
     if(manualBg){
       els.stage.style.backgroundImage = `url(${manualBg})`; els.stage.style.backgroundSize = 'cover'; els.stage.style.backgroundPosition = 'center';
-      if(groundEl) groundEl.style.background = 'transparent';
+      if(groundEl){ groundEl.style.background = 'transparent'; groundEl.style.borderTop = 'none'; }
     } else {
       // uno sfondo diverso per ogni giorno esatto (1.png = giorno 1, 2.png = giorno 2, ...),
       // con il nome del capitolo come ripiego se preferisci nominarli per scena invece che per giorno
       tasks.push(resolveRepoImageAsync('sfondi', activeBgSet, [String(day), chap.id]).then(url=>{
         if(url){
           els.stage.style.backgroundImage = `url(${url})`; els.stage.style.backgroundSize = 'cover'; els.stage.style.backgroundPosition = 'center';
-          if(groundEl) groundEl.style.background = 'transparent';
+          if(groundEl){ groundEl.style.background = 'transparent'; groundEl.style.borderTop = 'none'; }
         } else {
           els.stage.style.backgroundImage = '';
-          if(groundEl) groundEl.style.background = '';
+          if(groundEl){ groundEl.style.background = ''; groundEl.style.borderTop = ''; }
         }
       }));
     }
