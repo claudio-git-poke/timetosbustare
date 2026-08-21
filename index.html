@@ -1185,7 +1185,7 @@
     else { el.classList.remove('has-custom-img'); el.style.backgroundImage = ''; }
   }
 
-  // ── immagini caricate da GitHub Pages: immagini/sfondi/<set>/<chiave>.png e immagini/sprite/<set>/<chiave>.png ──
+  // ── immagini caricate da GitHub Pages: immagini/<tipo>/<set>/<chiave>.png ──
   const IMG_BASE = 'immagini';
   const EXT_CANDIDATES = ['png', 'jpg', 'jpeg', 'webp'];
   const SET_BG_KEY = 'cardsync_proto_bg_set';
@@ -1194,19 +1194,19 @@
   let activeSpriteSet = localStorage.getItem(SET_SPR_KEY) || 'default';
   const repoImgCache = {}; // "tipo/set/chiavi" -> url risolto, oppure null se il file non esiste in nessun formato
 
-  // finché gli sfondi sono caricati come "1.png","2.png"... invece dei nomi semantici,
-  // si prova prima il nome semantico e poi questo numero, nell'ordine dei capitoli della storia
-  const BG_NUMBER_FALLBACK = { centro:'1', lab:'2', negozio:'3', postino:'4', cielo:'5', boss:'6' };
+  // finché gli sprite (tranne il compagno, che ha una sua cartella dedicata) sono caricati
+  // come "a.png","b.png"... si prova prima il nome semantico e poi questa lettera
+  const SPRITE_LETTER_FALLBACK = { player:'a', nurse:'b', professor:'c', shopkeeper:'d', mailman:'e', flyer:'f', boss:'g' };
 
   function resolveRepoImage(type, set, keyCandidates, cb){
-    const keys = Array.isArray(keyCandidates) ? keyCandidates : [keyCandidates];
+    const keys = Array.isArray(keyCandidates) ? keyCandidates.filter(Boolean) : [keyCandidates];
     const cacheKey = `${type}/${set}/${keys.join('|')}`;
     if(cacheKey in repoImgCache){ cb(repoImgCache[cacheKey]); return; }
     let ki = 0, ei = 0;
     (function tryNext(){
       if(ki >= keys.length){ repoImgCache[cacheKey] = null; cb(null); return; }
       if(ei >= EXT_CANDIDATES.length){ ki++; ei = 0; tryNext(); return; }
-      const url = `${IMG_BASE}/${type === 'sprite' ? 'sprite' : 'sfondi'}/${set}/${keys[ki]}.${EXT_CANDIDATES[ei]}`;
+      const url = `${IMG_BASE}/${type}/${set}/${keys[ki]}.${EXT_CANDIDATES[ei]}`;
       const img = new Image();
       img.onload = ()=>{ repoImgCache[cacheKey] = url; cb(url); };
       img.onerror = ()=>{ ei++; tryNext(); };
@@ -1221,14 +1221,22 @@
       if(!el) return;
       const manual = customAssets.sprites[key];
       if(manual){ setSpriteImage(el, manual); return; }
-      resolveRepoImage('sprite', activeSpriteSet, key, url => setSpriteImage(el, url));
+      resolveRepoImage('sprite', activeSpriteSet, [key, SPRITE_LETTER_FALLBACK[key]], url => setSpriteImage(el, url));
     }
     resolveSprite(els.playerSprite, 'player');
-    resolveSprite(els.companionSprite, 'companion');
     resolveSprite(els.flyer, 'flyer');
     if(chap.npc){
       const npcKey = chap.npc.replace('char-', '');
       resolveSprite(els.npcSprite, npcKey);
+    }
+
+    // il compagno vive nella sua cartella dedicata immagini/companion/<set>/ — per ora il file
+    // caricato si chiama "pikachu.png": funziona, ma prima di pubblicare il repo conviene rinominarlo,
+    // dato che "Pikachu" è un personaggio Pokémon vero e proprio (marchio Nintendo/Game Freak)
+    if(els.companionSprite){
+      const manualCompanion = customAssets.sprites.companion;
+      if(manualCompanion){ setSpriteImage(els.companionSprite, manualCompanion); }
+      else { resolveRepoImage('companion', activeSpriteSet, ['companion', 'pikachu'], url => setSpriteImage(els.companionSprite, url)); }
     }
 
     const groundEl = els.stage.querySelector('.ground');
@@ -1237,7 +1245,9 @@
       els.stage.style.backgroundImage = `url(${manualBg})`; els.stage.style.backgroundSize = 'cover'; els.stage.style.backgroundPosition = 'center';
       if(groundEl) groundEl.style.background = 'transparent';
     } else {
-      resolveRepoImage('sfondi', activeBgSet, [chap.id, BG_NUMBER_FALLBACK[chap.id]], url=>{
+      // uno sfondo diverso per ogni giorno esatto (1.png = giorno 1, 2.png = giorno 2, ...),
+      // con il nome del capitolo come ripiego se preferisci nominarli per scena invece che per giorno
+      resolveRepoImage('sfondi', activeBgSet, [String(day), chap.id], url=>{
         if(url){
           els.stage.style.backgroundImage = `url(${url})`; els.stage.style.backgroundSize = 'cover'; els.stage.style.backgroundPosition = 'center';
           if(groundEl) groundEl.style.background = 'transparent';
