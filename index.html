@@ -413,18 +413,18 @@
   .next-slot-btn:active{ transform:translateY(3px); box-shadow:0 1px 0 rgba(10,16,48,0.7); }
 
   /* ── riepilogo finale a schermo intero ── */
-  .recap-title{ font-family:'Press Start 2P', monospace; font-size:0.85rem; text-align:center; text-shadow:var(--pixel-outline); }
-  .recap-grid{ display:flex; flex-wrap:wrap; gap:0.6rem; justify-content:center; }
+  .recap-title{ font-family:'Press Start 2P', monospace; font-size:0.78rem; text-align:center; text-shadow:var(--pixel-outline); }
+  .recap-grid{ display:flex; flex-wrap:wrap; gap:0.4rem; justify-content:center; }
   .recap-card{
-    width:78px; background:var(--menu-window-bg); border:2px solid var(--gb-0); box-shadow:inset 0 0 0 2px var(--gb-4);
+    width:68px; background:var(--menu-window-bg); border:2px solid var(--gb-0); box-shadow:inset 0 0 0 2px var(--gb-4);
     clip-path: polygon(7px 0, calc(100% - 7px) 0, 100% 7px, 100% calc(100% - 7px), calc(100% - 7px) 100%, 7px 100%, 0 calc(100% - 7px), 0 7px);
-    padding:0.5rem 0.35rem; display:flex; flex-direction:column; align-items:center; gap:0.25rem; text-align:center;
+    padding:0.4rem 0.3rem; display:flex; flex-direction:column; align-items:center; gap:0.2rem; text-align:center;
   }
-  .recap-card .glyph{ font-size:1.6rem; }
-  .recap-card .rarity-tag{ font-size:0.5rem; font-weight:700; text-transform:uppercase; padding:0.14rem 0.3rem; border-radius:2px; border:1px solid rgba(10,16,48,0.55); background:rgba(63,114,196,0.25); }
-  .recap-card .card-name{ font-size:0.58rem; line-height:1.25; }
-  .recap-card .dup-tag{ font-size:0.56rem; color:var(--gold); }
-  .recap-dust{ font-size:0.7rem; color:var(--gold); text-shadow:var(--pixel-outline); text-align:center; }
+  .recap-card .glyph{ font-size:1.3rem; }
+  .recap-card .rarity-tag{ font-size:0.46rem; font-weight:700; text-transform:uppercase; padding:0.12rem 0.26rem; border-radius:2px; border:1px solid rgba(10,16,48,0.55); background:rgba(63,114,196,0.25); }
+  .recap-card .card-name{ font-size:0.54rem; line-height:1.2; }
+  .recap-card .dup-tag{ font-size:0.52rem; color:var(--gold); }
+  .recap-dust{ font-size:0.66rem; color:var(--gold); text-shadow:var(--pixel-outline); text-align:center; }
 
   /* ── blackout giorno 30 ── */
   .blackout{ position:absolute; inset:0; background:#000; opacity:0; pointer-events:none; z-index:50; display:flex; align-items:center; justify-content:center; text-align:center; padding:2rem; }
@@ -447,7 +447,8 @@
     <div class="brand">CardSync Pro <span>·</span> Prototipo narrativo</div>
     <div style="display:flex; gap:0.4rem; align-items:center;">
       <div class="day-chip">✨ <span class="n" id="dustN">0</span></div>
-      <div class="day-chip">Giorno <span class="n" id="dayN">1</span>/30</div>
+      <div class="day-chip">🧸 <span class="n" id="dollN">0</span></div>
+      <div class="day-chip">G. <span class="n" id="dayN">1</span>/30</div>
       <button class="icon-btn" id="musicToggle" title="Musica on/off">🔊</button>
       <button class="icon-btn" id="infoBtn" title="Info">ⓘ</button>
     </div>
@@ -540,11 +541,21 @@
       <div class="recap-title">Bustina completata!</div>
       <div class="recap-grid" id="recapGrid"></div>
       <div class="recap-dust" id="recapDust"></div>
-      <button class="next-slot-btn" id="ovCloseBtn">Continua ▶</button>
+      <div class="reveal-hint">Tocca per continuare ▶</div>
     </div>
   </div>
 
-  <div class="blackout" id="blackout"><p>Tutto diventa nero…<br>Ti risvegli fuori dal Centro.</p></div>
+  <div class="blackout" id="blackout"><p id="blackoutText">Tutto diventa nero…<br>Ti risvegli fuori dal Centro.</p></div>
+
+  <div class="info-overlay" id="pokebambolaOverlay">
+    <div class="info-panel">
+      <p id="pokebambolaText">Sei stato via qualche giorno…</p>
+      <div style="display:flex; gap:0.6rem; justify-content:center; flex-wrap:wrap;">
+        <button class="import-reset-btn" id="pokebambolaYesBtn">🧸 Sì, usala</button>
+        <button class="import-reset-btn" id="pokebambolaNoBtn">No</button>
+      </div>
+    </div>
+  </div>
 
 
       </div>
@@ -565,6 +576,7 @@
 
   <div class="dev-caption">⚠️ Controlli di TEST: START avanza al giorno successivo, SELECT ricomincia dal giorno 1 — da rimuovere a integrazione ultimata.</div>
 
+  <button class="import-trigger-btn" id="testMissedDaysBtn">🧸 Test: simula giorni saltati</button>
   <button class="import-trigger-btn" id="importBtn">🖼️ Importa sprite/sfondi (TEST)</button>
 
   <div class="import-overlay" id="importOverlay">
@@ -685,9 +697,11 @@
     stepTear:$('stepTear'), stepReveal:$('stepReveal'), stepRecap:$('stepRecap'),
     cardStack:$('cardStack'), legendVeil:$('legendVeil'), revealParticles:$('revealParticles'), revealConfetti:$('revealConfetti'),
     flipCard:$('flipCard'), flipInner:$('flipInner'), flipFront:$('flipFront'), revealHint:$('revealHint'),
-    recapGrid:$('recapGrid'), recapDust:$('recapDust'), ovCloseBtn:$('ovCloseBtn'),
-    dustN:$('dustN'),
-    blackout:$('blackout'), btnNextDay:$('btnNextDay'), btnRestart:$('btnRestart'),
+    recapGrid:$('recapGrid'), recapDust:$('recapDust'),
+    dustN:$('dustN'), dollN:$('dollN'),
+    blackout:$('blackout'), blackoutText:$('blackoutText'), btnNextDay:$('btnNextDay'), btnRestart:$('btnRestart'),
+    pokebambolaOverlay:$('pokebambolaOverlay'), pokebambolaText:$('pokebambolaText'),
+    pokebambolaYesBtn:$('pokebambolaYesBtn'), pokebambolaNoBtn:$('pokebambolaNoBtn'), testMissedDaysBtn:$('testMissedDaysBtn'),
     importBtn:$('importBtn'), importOverlay:$('importOverlay'), importBody:$('importBody'),
     importCloseBtn:$('importCloseBtn'), importResetAll:$('importResetAll'),
     musicToggle:$('musicToggle'), infoBtn:$('infoBtn'), infoOverlay:$('infoOverlay'), infoCloseBtn:$('infoCloseBtn'),
@@ -700,6 +714,7 @@
 
     els.stage.className = 'stage ' + chap.bg;
     updateMusicForDay();
+    updateDollDisplay();
     els.playerSprite.classList.remove('walking');
     els.playerSprite.style.left = '-30px';
     els.companionSprite.classList.remove('walking');
@@ -1067,27 +1082,61 @@
 
   function updateDustDisplay(){ els.dustN.textContent = dust; }
 
-  els.ovCloseBtn.addEventListener('click', ()=>{
+  els.stepRecap.style.cursor = 'pointer';
+  els.stepRecap.addEventListener('click', ()=>{
     els.stepRecap.classList.remove('show');
     els.stepTear.classList.add('show');
     els.packOverlay.classList.remove('show');
   });
 
-  function triggerBlackout(){
+  function triggerBlackout(customText){
+    els.blackoutText.innerHTML = customText || 'Tutto diventa nero…<br>Ti risvegli fuori dal Centro.';
     els.blackout.classList.add('show');
     setTimeout(()=>{
       els.blackout.classList.remove('show');
       day = 1;
+      pokebamboleUsed = 0;
       renderScene();
     }, 3200);
   }
+
+  // ── pokebambole: come il salvavita del primo mockup — se ne guadagna una ogni 7 giorni di
+  // streak, fino a un massimo di 4. Il tasto di test simula il tornare dopo uno o più giorni saltati.
+  let pokebamboleUsed = 0;
+  function pokebamboleAvailable(){ return Math.max(0, Math.min(4, Math.floor(day / 7)) - pokebamboleUsed); }
+  function updateDollDisplay(){ els.dollN.textContent = pokebamboleAvailable(); }
+
+  els.testMissedDaysBtn.addEventListener('click', ()=>{
+    const avail = pokebamboleAvailable();
+    if(avail > 0){
+      els.pokebambolaText.textContent = `Sembra tu sia stato via qualche giorno… Vuoi usare una pokebambola per non perdere la serie? (ne hai ${avail})`;
+      els.pokebambolaYesBtn.style.display = 'inline-block';
+    } else {
+      els.pokebambolaText.textContent = 'Sembra tu sia stato via qualche giorno… e non hai pokebambole a disposizione.';
+      els.pokebambolaYesBtn.style.display = 'none';
+    }
+    els.pokebambolaOverlay.classList.add('show');
+  });
+
+  els.pokebambolaYesBtn.addEventListener('click', ()=>{
+    pokebamboleUsed++;
+    els.pokebambolaOverlay.classList.remove('show');
+    day++;
+    updateDollDisplay();
+    renderScene();
+  });
+
+  els.pokebambolaNoBtn.addEventListener('click', ()=>{
+    els.pokebambolaOverlay.classList.remove('show');
+    triggerBlackout('Impegno e costanza ti faranno migliorare…<br>Torni a casa, pronto per una nuova avventura.');
+  });
 
   els.btnNextDay.addEventListener('click', ()=>{
     if(day >= 30) return; // il giorno 30 si chiude solo con il blackout
     day++;
     renderScene();
   });
-  els.btnRestart.addEventListener('click', ()=>{ day = 1; renderScene(); });
+  els.btnRestart.addEventListener('click', ()=>{ day = 1; pokebamboleUsed = 0; renderScene(); });
 
   els.infoBtn.addEventListener('click', ()=> els.infoOverlay.classList.add('show'));
   els.infoCloseBtn.addEventListener('click', ()=> els.infoOverlay.classList.remove('show'));
