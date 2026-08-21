@@ -46,9 +46,10 @@
     position:relative; flex:1; min-height:0; overflow-y:auto; -webkit-overflow-scrolling:touch;
     background:var(--gb-0); border-radius:3px; box-shadow:inset 0 0 16px rgba(0,0,0,0.75);
     display:flex; flex-direction:column; align-items:center;
-    padding:0.8rem 0.7rem 1.3rem; scrollbar-width:thin;
+    padding:0.6rem 0.6rem 0.5rem; scrollbar-width:thin;
   }
   .gb-screen > *{ flex-shrink:0; }
+  .gb-screen > .stage{ flex:1 1 auto; min-height:70px; }
   .gb-screen::after{
     content:''; position:absolute; inset:0; pointer-events:none; z-index:40;
     background:repeating-linear-gradient(0deg, rgba(0,0,0,0.09) 0 1px, transparent 1px 3px);
@@ -141,7 +142,7 @@
 
   /* ── palcoscenico della scenetta ── */
   .stage{
-    position:relative; width:100%; max-width:420px; height:220px; overflow:hidden;
+    position:relative; width:100%; max-width:420px; overflow:hidden; align-self:center;
     border:3px solid var(--gb-0); box-shadow:inset 0 0 0 2px var(--gb-4);
     clip-path: polygon(12px 0, calc(100% - 12px) 0, 100% 12px, 100% calc(100% - 12px), calc(100% - 12px) 100%, 12px 100%, 0 calc(100% - 12px), 0 12px);
     transition: background 0.6s ease;
@@ -233,30 +234,32 @@
 
   /* ── finestra di dialogo ── */
   .dlg{
-    display:none; width:100%; max-width:420px; margin-top:0.9rem; background:var(--gb-4); color:var(--gb-0);
-    border:4px solid var(--gb-0); padding:0.9rem 1rem; position:relative;
+    display:none; width:100%; max-width:420px; margin-top:0.6rem; background:var(--gb-4); color:var(--gb-0);
+    border:4px solid var(--gb-0); padding:0.8rem 0.95rem; position:relative; cursor:pointer; user-select:none;
   }
   .dlg.show{ display:block; }
-  .dlg .npc-name{ font-size:0.66rem; margin-bottom:0.5rem; color:#3a4a6b; }
-  .dlg p{ font-size:0.78rem; line-height:1.6; color:#2c3a5c; }
+  .dlg .npc-name{ font-size:0.66rem; margin-bottom:0.4rem; color:#3a4a6b; }
+  .dlg p{ font-size:0.76rem; line-height:1.5; color:#2c3a5c; }
   .dlg::after{ content:'▼'; position:absolute; right:0.7rem; bottom:0.5rem; font-size:0.7rem; animation:arrow 0.8s steps(1) infinite; }
   @keyframes arrow{ 0%,100%{opacity:1;} 50%{opacity:0;} }
-  .dlg-next{ all:unset; cursor:pointer; display:block; margin-top:0.6rem; font-family:'Press Start 2P', monospace; font-size:0.62rem; background:var(--gb-0); color:var(--gb-4); padding:0.5rem 0.9rem; }
+
+  .icon-btn{
+    all:unset; cursor:pointer; width:1.7rem; height:1.7rem; display:flex; align-items:center; justify-content:center;
+    background:var(--menu-window-bg); border:2px solid var(--gb-0); box-shadow:inset 0 0 0 1px var(--gb-4);
+    font-size:0.85rem; border-radius:4px;
+  }
+  .info-overlay{
+    position:absolute; inset:0; z-index:70; background:rgba(6,10,26,0.92);
+    display:none; align-items:center; justify-content:center; padding:1rem;
+  }
+  .info-overlay.show{ display:flex; }
+  .info-panel{
+    width:100%; max-width:360px; background:#1c2340; color:var(--text); border:3px solid var(--gb-0);
+    box-shadow:inset 0 0 0 2px var(--gb-4); border-radius:10px; padding:1rem; display:flex; flex-direction:column; gap:0.8rem;
+  }
+  .info-panel p{ font-size:0.7rem; line-height:1.6; color:var(--muted); }
 
   /* ── pacco / bustina ── */
-  .pkg-zone{ width:100%; max-width:420px; display:flex; flex-direction:column; align-items:center; margin-top:1.4rem; min-height:150px; justify-content:center; }
-  .pkg{ display:none; cursor:pointer; text-align:center; }
-  .pkg.show{ display:block; animation:pkgIn 0.4s ease both; }
-  @keyframes pkgIn{ from{ opacity:0; transform:translateY(10px) scale(0.85);} to{ opacity:1; transform:translateY(0) scale(1);} }
-  .pkg-box{
-    width:70px; height:56px; margin:0 auto 0.6rem; background:var(--menu-window-bg);
-    border:3px solid var(--gb-0); box-shadow:inset 0 0 0 2px var(--gb-4), 0 0 18px 3px rgba(255,203,5,0.5);
-    clip-path: polygon(10px 0, calc(100% - 10px) 0, 100% 10px, 100% calc(100% - 10px), calc(100% - 10px) 100%, 10px 100%, 0 calc(100% - 10px), 0 10px);
-    animation: pkgPulse 1.4s ease-in-out infinite;
-    display:flex; align-items:center; justify-content:center; font-size:1.6rem;
-  }
-  @keyframes pkgPulse{ 0%,100%{ transform:scale(1);} 50%{ transform:scale(1.06);} }
-  .pkg-label{ font-size:0.62rem; color:var(--gold); text-shadow:var(--pixel-outline); }
 
   /* ── overlay a schermo intero: la bustina vera e propria da tagliare, ripresa dal mockup principale ── */
   .pack-overlay{
@@ -442,9 +445,11 @@
 
   <header>
     <div class="brand">CardSync Pro <span>·</span> Prototipo narrativo</div>
-    <div style="display:flex; gap:0.5rem; align-items:center;">
+    <div style="display:flex; gap:0.4rem; align-items:center;">
       <div class="day-chip">✨ <span class="n" id="dustN">0</span></div>
       <div class="day-chip">Giorno <span class="n" id="dayN">1</span>/30</div>
+      <button class="icon-btn" id="musicToggle" title="Musica on/off">🔊</button>
+      <button class="icon-btn" id="infoBtn" title="Info">ⓘ</button>
     </div>
   </header>
 
@@ -474,15 +479,15 @@
   <div class="dlg" id="dlg">
     <div class="npc-name" id="dlgName">???</div>
     <p id="dlgText">…</p>
-    <button class="dlg-next" id="dlgNext">Avanti ▼</button>
   </div>
 
-  <div class="pkg-zone">
-    <div class="pkg" id="pkg">
-      <div class="pkg-box">🎁</div>
-      <div class="pkg-label" id="pkgLabel">Tocca per aprire</div>
+  <div class="info-overlay" id="infoOverlay">
+    <div class="info-panel">
+      <p>Prototipo per validare tempi e struttura della scenetta narrativa. Le sprite sono disegni pixel originali (blocchi CSS o immagini caricate), non asset di alcun gioco esistente — nessuna rarità/pacco viene ancora salvata da vero.</p>
+      <button class="import-reset-btn" id="infoCloseBtn">Chiudi</button>
     </div>
   </div>
+
 
   <div class="pack-overlay" id="packOverlay">
     <div class="ov-step show" id="stepTear">
@@ -542,7 +547,6 @@
 
   <div class="blackout" id="blackout"><p>Tutto diventa nero…<br>Ti risvegli fuori dal Centro.</p></div>
 
-  <div class="note">Prototipo per validare tempi e struttura della scenetta narrativa. Le sprite sono disegni pixel originali (blocchi CSS), non asset di alcun gioco esistente — nessuna rarità/pacco viene ancora salvata da vero.</div>
 
       </div>
     </div>
@@ -674,8 +678,7 @@
   const els = {
     dayN:$('dayN'), chapterLabel:$('chapterLabel'), stage:$('stage'),
     playerSprite:$('playerSprite'), npcSprite:$('npcSprite'), flyer:$('flyer'), companionSprite:$('companionSprite'),
-    dlg:$('dlg'), dlgName:$('dlgName'), dlgText:$('dlgText'), dlgNext:$('dlgNext'),
-    pkg:$('pkg'), pkgLabel:$('pkgLabel'),
+    dlg:$('dlg'), dlgName:$('dlgName'), dlgText:$('dlgText'),
     packOverlay:$('packOverlay'), packBtnFull:$('packBtnFull'), packElFull:$('packElFull'),
     packFlapFull:$('packFlapFull'), packShellFull:$('packShellFull'),
     cutTrackFull:$('cutTrackFull'), cutGlowFull:$('cutGlowFull'), cutBladeFull:$('cutBladeFull'),
@@ -688,6 +691,7 @@
     blackout:$('blackout'), btnNextDay:$('btnNextDay'), btnRestart:$('btnRestart'),
     importBtn:$('importBtn'), importOverlay:$('importOverlay'), importBody:$('importBody'),
     importCloseBtn:$('importCloseBtn'), importResetAll:$('importResetAll'),
+    musicToggle:$('musicToggle'), infoBtn:$('infoBtn'), infoOverlay:$('infoOverlay'), infoCloseBtn:$('infoCloseBtn'),
   };
 
   function renderScene(){
@@ -696,12 +700,12 @@
     els.chapterLabel.textContent = chap.label;
 
     els.stage.className = 'stage ' + chap.bg;
+    updateMusicForDay();
     els.playerSprite.classList.remove('walking');
     els.playerSprite.style.left = '-30px';
     els.companionSprite.classList.remove('walking');
     els.companionSprite.style.left = '-24px';
     els.dlg.classList.remove('show');
-    els.pkg.classList.remove('show');
     els.packOverlay.classList.remove('show');
     document.querySelectorAll('.slot-dot').forEach(d => d.classList.remove('done'));
 
@@ -730,21 +734,16 @@
     els.dlgName.textContent = chap.npcName;
     els.dlgText.textContent = chap.lines[lineIdx];
     els.dlg.classList.add('show');
-    els.dlgNext.textContent = lineIdx < chap.lines.length - 1 ? 'Avanti ▼' : 'Ok ▼';
-    els.dlgNext.onclick = () => {
+    els.dlg.onclick = () => {
       if(lineIdx < chap.lines.length - 1){
         showDialog(chap, lineIdx + 1);
       } else {
         els.dlg.classList.remove('show');
+        els.dlg.onclick = null;
         if(chap.id === 'boss'){ triggerBlackout(); }
-        else { showPackage(); }
+        else { openPackOverlay(); }
       }
     };
-  }
-
-  function showPackage(){
-    els.pkg.classList.add('show');
-    els.pkg.onclick = openPackOverlay;
   }
 
   // ── bustina a schermo intero: stesso gesto "trascina per tagliare" del mockup principale ──
@@ -766,7 +765,6 @@
   }
 
   function openPackOverlay(){
-    els.pkg.classList.remove('show');
     resetPackOverlayVisuals();
     els.stepReveal.classList.remove('show');
     els.stepRecap.classList.remove('show');
@@ -1086,6 +1084,85 @@
     renderScene();
   });
   els.btnRestart.addEventListener('click', ()=>{ day = 1; renderScene(); });
+
+  els.infoBtn.addEventListener('click', ()=> els.infoOverlay.classList.add('show'));
+  els.infoCloseBtn.addEventListener('click', ()=> els.infoOverlay.classList.remove('show'));
+
+  // ══════════════════════════════════════════════════════════════════════
+  // Musichine — sintetizzate al volo con Web Audio (nessun file audio, nessuna
+  // melodia esistente riprodotta): una traccia diversa ogni 7 giorni, via via
+  // più "piena" e mossa, in stile chiptune GBA senza copiare nulla di reale.
+  // ══════════════════════════════════════════════════════════════════════
+  const NOTE_FREQ = {
+    C3:130.81, D3:146.83, E3:164.81, F3:174.61, G3:196.00, A3:220.00, B3:246.94,
+    C4:261.63, D4:293.66, E4:329.63, F4:349.23, G4:392.00, A4:440.00, B4:493.88,
+    C5:523.25, D5:587.33, E5:659.25, F5:698.46, G5:783.99, A5:880.00, R:0,
+  };
+  // ogni settimana: melodia principale, basso opzionale, armonia opzionale — via via più ricche
+  const WEEK_TRACKS = [
+    { bpm:96,  lead:['C4','R','E4','R','G4','R','E4','R'] },
+    { bpm:104, lead:['C4','D4','E4','R','G4','E4','D4','R'], bass:['C3','R','G3','R'] },
+    { bpm:114, lead:['E4','G4','A4','G4','E4','D4','C4','D4'], bass:['C3','C3','G3','G3'] },
+    { bpm:126, lead:['G4','A4','C5','A4','G4','E4','D4','E4'], bass:['C3','E3','G3','E3'], harmony:['R','E4','R','R','R','G4','R','R'] },
+    { bpm:140, lead:['C5','B4','G4','A4','C5','D5','C5','G4'], bass:['C3','G3','E3','G3'], harmony:['E4','R','G4','R','E4','R','G4','R'] },
+  ];
+  let musicTimer = null;
+  let currentWeek = -1;
+  let musicMuted = localStorage.getItem('cardsync_proto_music_muted') === '1';
+  els.musicToggle.textContent = musicMuted ? '🔇' : '🔊';
+
+  function playChiptuneNote(ctx, freq, startTime, dur, type, peakGain){
+    if(!freq) return;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = type;
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0.0001, startTime);
+    gain.gain.linearRampToValueAtTime(peakGain, startTime + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001, startTime + dur * 0.92);
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.start(startTime); osc.stop(startTime + dur);
+  }
+
+  function stopMusic(){ if(musicTimer){ clearTimeout(musicTimer); musicTimer = null; } }
+
+  function playWeekTrack(weekIdx){
+    stopMusic();
+    if(musicMuted) return;
+    const ctx = getAudioCtx(); if(!ctx) return;
+    const track = WEEK_TRACKS[Math.max(0, Math.min(weekIdx, WEEK_TRACKS.length - 1))];
+    const stepDur = 60 / track.bpm / 2;
+    (function scheduleLoop(){
+      const startAt = ctx.currentTime + 0.05;
+      track.lead.forEach((n, i) => playChiptuneNote(ctx, NOTE_FREQ[n], startAt + i * stepDur, stepDur, 'square', 0.05));
+      if(track.bass) track.bass.forEach((n, i) => playChiptuneNote(ctx, NOTE_FREQ[n], startAt + i * stepDur * 2, stepDur * 2, 'triangle', 0.045));
+      if(track.harmony) track.harmony.forEach((n, i) => playChiptuneNote(ctx, NOTE_FREQ[n], startAt + i * stepDur, stepDur, 'square', 0.028));
+      musicTimer = setTimeout(scheduleLoop, track.lead.length * stepDur * 1000);
+    })();
+  }
+
+  function updateMusicForDay(){
+    const weekIdx = Math.min(WEEK_TRACKS.length - 1, Math.floor((day - 1) / 7));
+    if(weekIdx !== currentWeek){
+      currentWeek = weekIdx;
+      if(!musicMuted && audioCtx) playWeekTrack(weekIdx);
+    }
+  }
+
+  els.musicToggle.addEventListener('click', ()=>{
+    musicMuted = !musicMuted;
+    localStorage.setItem('cardsync_proto_music_muted', musicMuted ? '1' : '0');
+    els.musicToggle.textContent = musicMuted ? '🔇' : '🔊';
+    if(musicMuted){ stopMusic(); } else { playWeekTrack(currentWeek); }
+  });
+
+  // l'audio nei browser parte solo dopo un gesto dell'utente: al primo tocco/click
+  // sulla pagina avviamo (o riprendiamo) l'AudioContext e la traccia della settimana corrente
+  document.addEventListener('pointerdown', function firstGesture(){
+    document.removeEventListener('pointerdown', firstGesture);
+    if(!musicMuted) playWeekTrack(currentWeek === -1 ? Math.floor((day - 1) / 7) : currentWeek);
+  }, { once:true });
+
 
   // ══════════════════════════════════════════════════════════════════════
   // Pannello import sprite/sfondi — SOLO PER PROVA, da rimuovere quando gli
