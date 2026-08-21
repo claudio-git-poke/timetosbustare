@@ -1192,18 +1192,24 @@
   const SET_SPR_KEY = 'cardsync_proto_sprite_set';
   let activeBgSet = localStorage.getItem(SET_BG_KEY) || 'trama1';
   let activeSpriteSet = localStorage.getItem(SET_SPR_KEY) || 'default';
-  const repoImgCache = {}; // "tipo/set/chiave" -> url risolto, oppure null se il file non esiste in nessun formato
+  const repoImgCache = {}; // "tipo/set/chiavi" -> url risolto, oppure null se il file non esiste in nessun formato
 
-  function resolveRepoImage(type, set, key, cb){
-    const cacheKey = `${type}/${set}/${key}`;
+  // finché gli sfondi sono caricati come "1.png","2.png"... invece dei nomi semantici,
+  // si prova prima il nome semantico e poi questo numero, nell'ordine dei capitoli della storia
+  const BG_NUMBER_FALLBACK = { centro:'1', lab:'2', negozio:'3', postino:'4', cielo:'5', boss:'6' };
+
+  function resolveRepoImage(type, set, keyCandidates, cb){
+    const keys = Array.isArray(keyCandidates) ? keyCandidates : [keyCandidates];
+    const cacheKey = `${type}/${set}/${keys.join('|')}`;
     if(cacheKey in repoImgCache){ cb(repoImgCache[cacheKey]); return; }
-    let i = 0;
+    let ki = 0, ei = 0;
     (function tryNext(){
-      if(i >= EXT_CANDIDATES.length){ repoImgCache[cacheKey] = null; cb(null); return; }
-      const url = `${IMG_BASE}/${type === 'sprite' ? 'sprite' : 'sfondi'}/${set}/${key}.${EXT_CANDIDATES[i]}`;
+      if(ki >= keys.length){ repoImgCache[cacheKey] = null; cb(null); return; }
+      if(ei >= EXT_CANDIDATES.length){ ki++; ei = 0; tryNext(); return; }
+      const url = `${IMG_BASE}/${type === 'sprite' ? 'sprite' : 'sfondi'}/${set}/${keys[ki]}.${EXT_CANDIDATES[ei]}`;
       const img = new Image();
       img.onload = ()=>{ repoImgCache[cacheKey] = url; cb(url); };
-      img.onerror = ()=>{ i++; tryNext(); };
+      img.onerror = ()=>{ ei++; tryNext(); };
       img.src = url;
     })();
   }
@@ -1231,7 +1237,7 @@
       els.stage.style.backgroundImage = `url(${manualBg})`; els.stage.style.backgroundSize = 'cover'; els.stage.style.backgroundPosition = 'center';
       if(groundEl) groundEl.style.background = 'transparent';
     } else {
-      resolveRepoImage('sfondi', activeBgSet, chap.id, url=>{
+      resolveRepoImage('sfondi', activeBgSet, [chap.id, BG_NUMBER_FALLBACK[chap.id]], url=>{
         if(url){
           els.stage.style.backgroundImage = `url(${url})`; els.stage.style.backgroundSize = 'cover'; els.stage.style.backgroundPosition = 'center';
           if(groundEl) groundEl.style.background = 'transparent';
