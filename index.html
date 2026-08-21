@@ -205,6 +205,16 @@
   .char-boss{ --hat-c:#0a1030; --skin-c:#e3ac74; --shirt-c:#22232b; --pants-c:#0a1030; }
   .char-boss .p-acc{ display:block; top:14px; left:11px; width:4px; height:11px; background:#a4222f; }
   .char-boss .p-hat{ left:2px; width:22px; height:5px; }
+  /* ── personaggi aggiunti con la storia a 30 giorni: solo colori, nessun asset esterno necessario ── */
+  .char-saggio{ --hat-c:transparent; --skin-c:#e3ac74; --shirt-c:#6b4a2f; --pants-c:#4a3320; }
+  .char-saggio .p-acc{ display:block; top:16px; left:2px; width:22px; height:5px; background:#fff6df; }
+  .char-pigliamosche{ --hat-c:#3a6b35; --skin-c:#f4c99b; --shirt-c:#f2e14d; --pants-c:#2e4d2b; }
+  .char-pescatore{ --hat-c:#5c7a99; --skin-c:#e3ac74; --shirt-c:#8a5b28; --pants-c:#3a4a6b; }
+  .char-scalaroccie{ --hat-c:#a4222f; --skin-c:#e3ac74; --shirt-c:#caa14d; --pants-c:#5c4a33; }
+  .char-rocket{ --hat-c:#0a1030; --skin-c:#f4c99b; --shirt-c:#1c1e3d; --pants-c:#0a1030; }
+  .char-rocket .p-acc{ display:block; top:15px; left:10px; width:6px; height:6px; border-radius:50%; background:#a4222f; }
+  .char-marinaio{ --hat-c:#fff6df; --skin-c:#e3ac74; --shirt-c:#274b8f; --pants-c:#1c3d78; }
+  .char-ragazzo{ --hat-c:transparent; --skin-c:#f4c99b; --shirt-c:#4caf6a; --pants-c:#516275; }
 
   #playerSprite{ left:-30px; }
   #playerSprite.walking{ animation: walkIn 1.6s steps(8) forwards, bob 0.3s steps(2) infinite; }
@@ -606,38 +616,157 @@
   </div>
 
 <script>
-  // ── capitoli della storia: ogni voce copre un intervallo di giorni ──
+  // ── capitoli della storia: un giorno = una scena, secondo "storia_avventura_corretta.txt" ──
   const CHAPTERS = [
-    { id:'centro', label:'Atto 1 — Il Centro', dayFrom:1, dayTo:6, bg:'bg-centro', npc:'char-nurse', npcName:'Assistente del Centro',
+    { id:'cameretta', label:'Giorno 1 — Cameretta', dayFrom:1, dayTo:1, bg:'bg-centro', npc:null, npcName:'???',
       lines:[
-        'Buongiorno! Ecco la tua bustina di oggi.',
-        'Torna domani: ogni giorno che passi da qui la tua striscia cresce.'
+        'Dormi nel letto e ti svegli perché inizia una nuova avventura.',
+        'Trovi un regalo sulla scrivania.'
       ] },
-    { id:'lab', label:'Atto 1 — Svolta: il Professore', dayFrom:7, dayTo:7, bg:'bg-lab', npc:'char-professor', npcName:'Il Professore',
+    { id:'primo-percorso', label:'Giorno 2 — Primo percorso', dayFrom:2, dayTo:2, bg:'bg-postino', npc:'char-professor', npcName:'Il Professore',
       lines:[
-        'Ehi, sei tu quello che passa ogni giorno al Centro?',
-        'Ho sentito parlare della tua costanza. Da oggi ci penso io a portarti qualcosa di persona.'
+        'Senti il cuore che ti batte, qui inizia tutto!',
+        "È coinvolgente la quantità di cose che la gente smarrisce nell'erba alta."
       ] },
-    { id:'negozio', label:'Atto 2 — Il Negozio', dayFrom:8, dayTo:14, bg:'bg-negozio', npc:'char-shopkeeper', npcName:'Il Negoziante',
+    { id:'foresta', label:'Giorno 3 — Foresta', dayFrom:3, dayTo:3, bg:'bg-lab', npc:'char-pigliamosche', npcName:'Il Pigliamosche',
       lines:[
-        'Il Professore mi ha chiesto di darti questa, di persona.',
-        'Dicono che stia preparando qualcosa di grosso per te...'
+        'Gli alberi fanno ombra e occhietti curiosi ti tengono sotto controllo.',
+        'Dentro un albero trovi qualcosa di nascosto.'
       ] },
-    { id:'postino', label:'Atto 2 — Sulla strada', dayFrom:15, dayTo:21, bg:'bg-postino', npc:'char-mailman', npcName:'Il Postino',
+    { id:'ponte', label:'Giorno 4 — Ponte', dayFrom:4, dayTo:4, bg:'bg-postino', npc:'char-pescatore', npcName:'Il Pescatore',
       lines:[
-        'Consegna speciale! Anche oggi per te.',
-        'Più ti avvicini al giorno 30, più la gente ne parla...'
+        'Se solo avessi un amo...',
+        "Galleggia sull'acqua."
       ] },
-    { id:'cielo', label:'Atto 2 — Al crepuscolo', dayFrom:22, dayTo:29, bg:'bg-cielo', npc:null, npcName:'???',
+    { id:'entrata-caverna', label:'Giorno 5 — Entrata caverna', dayFrom:5, dayTo:5, bg:'bg-cielo', npc:'char-scalaroccie', npcName:'Lo Scalarocce',
       lines:[
-        'Qualcosa plana dal cielo e lascia cadere un pacco ai tuoi piedi.',
-        'Nessun messaggio. Solo un simbolo che non riconosci inciso sopra.'
+        'Speriamo che dentro si veda, hai sentito che questa caverna è pericolosa se percorsa al buio.',
+        'Vedi degli strani tizi che scappano e lasciano cadere una busta.'
       ] },
-    { id:'boss', label:'Atto 3 — Il Boss', dayFrom:30, dayTo:30, bg:'bg-boss', npc:'char-boss', npcName:'Il Boss',
+    { id:'tempio-caverna', label:'Giorno 6 — Tempio nella caverna', dayFrom:6, dayTo:6, bg:'bg-cielo', npc:'char-saggio', npcName:'Il Saggio',
       lines:[
-        'Così sei tu che tutti seguono ogni giorno...',
-        'Quello che cerchi è qui. Ma non te lo darò così facilmente.',
-        'Nella confusione, riesci a sottrargli il pacco misterioso e a scappare!'
+        "E questo cos'è? Sembra inesplorato da anni.",
+        'Su un altare.'
+      ] },
+    { id:'uscita-caverna', label:'Giorno 7 — Uscita caverna', dayFrom:7, dayTo:7, bg:'bg-cielo', npc:'char-rocket', npcName:'Team Rocket',
+      lines:[
+        "I cattivi ti aspettano all'uscita, ma riesci a nasconderti.",
+        'In quella che sembra la tana di un Meowth selvatico che fortunatamente era vuota; dentro trovi anche una Poké Bambola.'
+      ] },
+    { id:'spiaggia', label:'Giorno 8 — Spiaggia', dayFrom:8, dayTo:8, bg:'bg-centro', npc:'char-shopkeeper', npcName:'Il Negoziante',
+      lines:[
+        'Forse qui puoi procurarti un amo.',
+        'Niente amo, ma hai una busta di consolazione dal negoziante.'
+      ] },
+    { id:'hotel', label:'Giorno 9 — Hotel', dayFrom:9, dayTo:9, bg:'bg-negozio', npc:null, npcName:'???',
+      lines:[
+        'Questo hotel ha decorazioni molto strane.',
+        'Quando tocchi una delle decorazioni, scompare e ti ritrovi in mano una busta.'
+      ] },
+    { id:'nave', label:'Giorno 10 — Nave', dayFrom:10, dayTo:10, bg:'bg-cielo', npc:'char-marinaio', npcName:'Il Marinaio',
+      lines:[
+        'Oggi hai scoperto che soffri il mal di mare. Troppo tardi!',
+        'Un bimbo si avvicina e ti regala una busta perché ti vede triste.'
+      ] },
+    { id:'isola-sconosciuta', label:'Giorno 11 — Isola sconosciuta', dayFrom:11, dayTo:11, bg:'bg-postino', npc:null, npcName:'???',
+      lines:[
+        "Finalmente sei arrivato sull'isola: qui riuscirai a trovare ciò che cerchi?",
+        'Scavi sotto un albero e trovi una busta.'
+      ] },
+    { id:'verso-il-faro', label:'Giorno 12 — Verso il faro', dayFrom:12, dayTo:12, bg:'bg-postino', npc:null, npcName:'???',
+      lines:[
+        'Inizi ad essere stanco: la salita è lunga e fa caldo, ma la vista è bellissima.',
+        'Il vento ti colpisce il volto con una busta.'
+      ] },
+    { id:'il-faro', label:'Giorno 13 — Il faro', dayFrom:13, dayTo:13, bg:'bg-cielo', npc:'char-rocket', npcName:'Team Rocket',
+      lines:[
+        'Cosa ci fa quel tizio qui? Si butta dalla scogliera e atterra su una mongolfiera!',
+        'Ti lancia con disprezzo una busta.'
+      ] },
+    { id:'lava', label:'Giorno 14 — Lava', dayFrom:14, dayTo:14, bg:'bg-boss', npc:null, npcName:'???',
+      lines:[
+        'Ecco cos\'era quel calore che sentivi! Gli occhi di un Pokémon ti osservano, ma poi ti rendi conto che è solo una bambola di un Pokémon.',
+        'La Poké Bambola tiene in mano una busta.'
+      ] },
+    { id:'lava-2', label:'Giorno 15 — Lava 2', dayFrom:15, dayTo:15, bg:'bg-boss', npc:'char-rocket', npcName:'Team Rocket',
+      lines:[
+        'Ancora quel tizio?',
+        'Dopo una lotta Pokémon ne esci vincitore, quindi, come da regole ufficiali, ti regala una busta.'
+      ] },
+    { id:'uscita-vulcano', label:'Giorno 16 — Uscita del vulcano', dayFrom:16, dayTo:16, bg:'bg-boss', npc:null, npcName:'???',
+      lines:[
+        "Una creatura ti osserva e ti viene incontro: è un Charmander che ti indica l'uscita.",
+        'Un Charmander ti indica una busta seppellita dalle rocce.'
+      ] },
+    { id:'tempio-vulcano', label:'Giorno 17 — Tempio del vulcano', dayFrom:17, dayTo:17, bg:'bg-boss', npc:null, npcName:'???',
+      lines:[
+        'Di nuovo quegli strani simboli di cui avevi sentito parlare.',
+        'Quando tocchi una delle rune, scompare e ti ritrovi in mano una busta.'
+      ] },
+    { id:'cima-vulcano', label:'Giorno 18 — Cima del vulcano', dayFrom:18, dayTo:18, bg:'bg-boss', npc:'char-rocket', npcName:'Team Rocket',
+      lines:[
+        'In cima al vulcano, i cattivi stanno cercando di aprire un baule, ma scappano appena ti vedono.',
+        'Apri il baule e trovi una busta.'
+      ] },
+    { id:'cima-altra-isola', label:'Giorno 19 — Cima dell\'altra isola', dayFrom:19, dayTo:19, bg:'bg-postino', npc:null, npcName:'???',
+      lines:[
+        'Questa isola invece non ha dato grossi frutti: sei stanco e hai trovato poco, ma è ora di andare via.',
+        "Hai trovato una busta sola in tutta l'isola."
+      ] },
+    { id:'via-dall-isola', label:'Giorno 20 — Andando via dall\'isola', dayFrom:20, dayTo:20, bg:'bg-postino', npc:null, npcName:'???',
+      lines:[
+        'Un Clefable viene a regalarti un pacco luminoso e ti indica una strada che non avevi notato.',
+        "Dentro c'è la busta."
+      ] },
+    { id:'tempio-luna', label:'Giorno 21 — Tempio della luna', dayFrom:21, dayTo:21, bg:'bg-cielo', npc:'char-saggio', npcName:'Il Saggio',
+      lines:[
+        'Il saggio sembra conoscere il tuo nome prima che tu ti presentassi: inquietante...',
+        'Ti dà asilo; nelle tue stanze, sul cuscino, trovi una busta.'
+      ] },
+    { id:'caverna-tempio', label:'Giorno 22 — Caverna del tempio', dayFrom:22, dayTo:22, bg:'bg-cielo', npc:null, npcName:'???',
+      lines:[
+        'Il saggio ti indica un percorso segreto perché sente che tu lo meriti.',
+        "Dentro trovi un pacco con il tuo nome scritto sopra; dentro c'è la busta."
+      ] },
+    { id:'caverna', label:'Giorno 23 — Caverna', dayFrom:23, dayTo:23, bg:'bg-cielo', npc:null, npcName:'???',
+      lines:[
+        'Qui ci sono massi giganti da spostare per passare: ovvio che il saggio non riusciva a passare.',
+        'Sotto un sasso che sposti.'
+      ] },
+    { id:'cascata', label:'Giorno 24 — Cascata', dayFrom:24, dayTo:24, bg:'bg-postino', npc:'char-pescatore', npcName:'Il Pescatore',
+      lines:[
+        "Il rumore dell'acqua ti attira e infatti, dietro la cascata, qualcosa brilla. C'è anche un pescatore che sta pescando: ti fa un cenno con la testa e ti ignora.",
+        'Nascosta dietro la cascata.'
+      ] },
+    { id:'cima-montagna', label:'Giorno 25 — Cima montagna', dayFrom:25, dayTo:25, bg:'bg-lab', npc:'char-saggio', npcName:'Il Saggio',
+      lines:[
+        'Sei circondato da statue di Pokémon antichissime, perfettamente conservate nonostante il vento qui soffi fortissimo. Il saggio ti stava aspettando e ti mostra come proseguire.',
+        "Quando arrivi al centro dell'anfiteatro, una nicchia si apre e ti mostra una busta."
+      ] },
+    { id:'entrata-tempio', label:'Giorno 26 — Entrata tempio', dayFrom:26, dayTo:26, bg:'bg-lab', npc:null, npcName:'???',
+      lines:[
+        'Le pietre sulla pesantissima porta di pietra reagiscono con qualcosa che hai addosso. Senti le vibrazioni che ti circondano partire dal tuo corpo e propagarsi nella montagna.',
+        "Con un rumore sordo qualcosa cade dall'alto: è la busta."
+      ] },
+    { id:'entrata-lega', label:'Giorno 27 — Entrata lega', dayFrom:27, dayTo:27, bg:'bg-negozio', npc:null, npcName:'???',
+      lines:[
+        "Ti ritrovi nella stanza del campione della Lega: tutto è ricco e fatto d'oro.",
+        "C'è scritto 'non toccare', ma UNA BUSTA È UNA BUSTA."
+      ] },
+    { id:'tempio-4', label:'Giorno 28 — Tempio 4', dayFrom:28, dayTo:28, bg:'bg-lab', npc:'char-saggio', npcName:'Il Saggio',
+      lines:[
+        "Vieni cacciato fuori dalla Lega e torni a parlare con il saggio che ti chiede scusa perché: 'Ah, pensavo fossi il campione e volevo farti fare una scorciatoia!'",
+        'Ti dà una busta per scusarsi.'
+      ] },
+    { id:'scalinata', label:'Giorno 29 — Scalinata', dayFrom:29, dayTo:29, bg:'bg-lab', npc:'char-ragazzo', npcName:'Il Ragazzo',
+      lines:[
+        "Ti invitano a fare la strada normale. Quando arrivi ai piedi della lunga scalinata incontri un ragazzo che dice: 'Oh no, il mio antico nemico: le scale!! Io mi arrendo, tieni: prendi questa!'",
+        'Il ragazzo ti dà la busta.'
+      ] },
+    { id:'boss', label:'Giorno 30 — Il Boss', dayFrom:30, dayTo:30, bg:'bg-boss', npc:'char-boss', npcName:'Il Boss',
+      lines:[
+        "Quando arrivi alla sala del campione, trovi il capo dei cattivi seduto che si è già sbustato tutte le buste e ride: 'Tieni, è l'ultima che è rimasta... tanto non ci troverai nulla'.",
+        'Il boss ti dà la busta.'
       ] },
   ];
 
@@ -678,12 +807,12 @@
     if(n < 99) return pick(ULTRA_POOL);
     return pick(LEGEND_POOL);
   }
-  function buildFourSlots(){
+  function buildFourSlots(forceLegendary){
     return [
       pick(COMMON_POOL),
       pick(COMMON_POOL),
       Math.random() < 0.01 ? pick(ULTRA_POOL) : pick(UNCOMMON_POOL), // slot 3: 1% ultra rara
-      rollFourthSlot(), // slot 4: droprate pesato
+      forceLegendary ? pick(LEGEND_POOL) : rollFourthSlot(), // slot 4: droprate pesato, o leggendaria garantita (busta del boss)
     ];
   }
 
@@ -691,6 +820,7 @@
   let currentSlots = [];
   let currentSlotResults = [];
   let slotIndex = 0;
+  let isBossPack = false; // ── true quando la busta aperta è quella del boss (giorno 30, leggendaria garantita) ──
   // ── collezione e polvere: persistono tra un giorno e l'altro (anche dopo il blackout),
   //    perché saranno la base del futuro shop dove spendere la polvere dei doppioni ──
   let dust = 0;
@@ -766,8 +896,8 @@
       } else {
         els.dlg.classList.remove('show');
         els.dlg.onclick = null;
-        if(chap.id === 'boss'){ triggerBlackout(); }
-        else { openPackOverlay(); }
+        // ── anche il giorno del boss dà una busta (con leggendaria garantita): il "Game Over" arriva dopo, non al posto della busta ──
+        openPackOverlay();
       }
     };
   }
@@ -830,8 +960,10 @@
     els.stepRecap.classList.remove('show');
     els.stepTear.classList.add('show');
     els.packOverlay.classList.add('show');
+    // ── la busta del boss (giorno 30) contiene sempre una leggendaria garantita ──
+    isBossPack = getChapter(day).id === 'boss';
     // ── la bustina viene generata subito, così l'indizio leggendaria può comparire già durante lo strappo ──
-    currentSlots = buildFourSlots();
+    currentSlots = buildFourSlots(isBossPack);
     currentSlotResults = [];
     pendingLegendary = currentSlots[3].rarity === 'Leggendaria';
     if(pendingLegendary){ els.packBtnFull.classList.add('legend-hint'); startIdleFlicker(); }
@@ -1221,8 +1353,14 @@
   els.stepRecap.style.cursor = 'pointer';
   els.stepRecap.addEventListener('click', ()=>{
     els.stepRecap.classList.remove('show');
-    els.stepTear.classList.add('show');
     els.packOverlay.classList.remove('show');
+    if(isBossPack){
+      // ── era la busta del boss: niente altro giorno, si passa al "Game Over" ──
+      isBossPack = false;
+      triggerBlackout("Game Over.<br>Giovanni è molto arrabbiato e si sfoga su di te.");
+    } else {
+      els.stepTear.classList.add('show');
+    }
   });
 
   function triggerBlackout(customText){
@@ -1414,9 +1552,15 @@
   const ASSET_SPRITES = [
     { key:'player', label:'Player' },
     { key:'companion', label:'Compagno' },
-    { key:'nurse', label:'Assistente del Centro' },
     { key:'professor', label:'Professore' },
+    { key:'pigliamosche', label:'Pigliamosche' },
+    { key:'pescatore', label:'Pescatore' },
+    { key:'scalaroccie', label:'Scalarocce' },
+    { key:'saggio', label:'Saggio' },
+    { key:'rocket', label:'Team Rocket' },
     { key:'shopkeeper', label:'Negoziante' },
+    { key:'marinaio', label:'Marinaio' },
+    { key:'ragazzo', label:'Ragazzo' },
     { key:'mailman', label:'Postino' },
     { key:'flyer', label:'Creatura volante' },
     { key:'boss', label:'Il Boss' },
